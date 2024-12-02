@@ -15,8 +15,8 @@ router.get('/', (req, res) => {
  * /auth/register:
  *   post:
  *     summary: Register a new user
- *     tags:
- *       - Authentication
+ *     security:
+ *       - BearerAuth: [] # This adds the Bearer token to the endpoint
  *     requestBody:
  *       required: true
  *       content:
@@ -107,8 +107,8 @@ router.post('/register', async (req, res) => {
  * /auth/login:
  *   post:
  *     summary: Authenticate user with ID token
- *     tags:
- *       - Authentication
+ *     security:
+ *       - BearerAuth: [] # This adds the Bearer token to the endpoint
  *     requestBody:
  *       required: true
  *       content:
