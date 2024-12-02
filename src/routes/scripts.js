@@ -4,7 +4,7 @@ const { auth } = require("../firebase/firebaseConfig"); // Firebase Admin SDK
 const { processScriptWithVertexAI } = require("../AI/google/vertex");
 const sentimentInstructions = require("../AI/google/system_instructions/sentiment"); // Default import
 const axios = require("axios");
-const authenticate = require("../middleware/authMiddleware");
+const { authenticate } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 const db = getFirestore();

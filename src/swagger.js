@@ -2,6 +2,7 @@ const swaggerUi = require('swagger-ui-express');
 const yaml = require('js-yaml');
 const fs = require('fs');
 const path = require('path'); // Import path module
+const { swaggerAuth } = require('./middleware/authMiddleware');
 
 module.exports = (app) => {
   // Resolve the absolute path to the OpenAPI spec file
@@ -11,5 +12,5 @@ module.exports = (app) => {
   const openApiSpec = yaml.load(fs.readFileSync(openApiSpecPath, 'utf8'));
 
   // Serve Swagger UI for OpenAPI documentation
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
+  app.use('/api-docs', swaggerAuth, swaggerUi.serve, swaggerUi.setup(openApiSpec));
 };
