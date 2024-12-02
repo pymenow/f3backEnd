@@ -40,6 +40,11 @@
      ```json
      [
   {
+    "Emotion": "Neutral",
+    "Valence": 0.1,
+    "Arousal": 0.1
+  },
+  {
     "Emotion": "Aroused",
     "Valence": 3.76,
     "Arousal": 9.21
