@@ -19,7 +19,7 @@ const db = getFirestore();
  *     tags:
  *       - Scripts
  *     security:
- *       - bearerAuth: [] # Ensure the user is authenticated
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -215,7 +215,7 @@ router.post('/emotion-analysis', authenticate, async (req, res) => {
  *     tags:
  *       - Scripts
  *     security:
- *       - bearerAuth: [] # Ensure the user is authenticated
+ *       - BearerAuth: [] # This adds the Bearer token to the endpoint
  *     responses:
  *       200:
  *         description: Scripts retrieved successfully
