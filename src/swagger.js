@@ -11,6 +11,14 @@ module.exports = (app) => {
   // Load OpenAPI spec from the YAML file
   const openApiSpec = yaml.load(fs.readFileSync(openApiSpecPath, 'utf8'));
 
+  // Get the PORT from the environment variable or default to 8080
+  const PORT = process.env.PORT || 8080;
+
+  // Dynamically set the server URL in the OpenAPI spec
+  openApiSpec.servers = [
+    { url: `http://localhost:${PORT}`, description: 'Local server' }
+  ];
+
   // Serve Swagger UI for OpenAPI documentation
   app.use('/api-docs', swaggerAuth, swaggerUi.serve, swaggerUi.setup(openApiSpec));
 };
