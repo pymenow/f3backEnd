@@ -1,13 +1,94 @@
 const express = require("express");
 const { getFirestore } = require("firebase-admin/firestore");
 const { auth } = require("../firebase/firebaseConfig"); // Firebase Admin SDK
-const { processScriptWithVertexAI } = require("../AI/google/vertex");
+const { processScriptWithVertexAI, processScriptWithVertexAIStream } = require("../AI/google/vertex");
 const sentimentInstructions = require("../AI/google/system_instructions/sentiment"); // Default import
 const axios = require("axios");
 const { authenticate } = require("../middleware/authMiddleware");
 const router = express.Router();
+const { LanguageServiceClient } = require('@google-cloud/language').v2;
 
 const db = getFirestore();
+const languageClient = new LanguageServiceClient();
+
+router.post('/presampling', authenticate, async (req, res) => {
+  const { type, region, identity, brand, script } = req.body;
+
+  // Validate input
+  if (!type || !region || !identity || !script || script.length < 20 || script.length > 2000) {
+    return res.status(400).json({
+      error: 'Invalid input. Ensure all required fields are provided and script length is between 20 and 2000 words.',
+    });
+  }
+
+  try {
+    const userId = req.user.uid; // Get the authenticated user's ID
+
+    // Store script metadata in Firestore
+    const scriptRef = db.collection('scripts').doc();
+    const scriptData = {
+      userId,
+      type,
+      region,
+      identity,
+      brand: brand || null,
+      script,
+      status: 'pending',
+      createdAt: new Date(),
+    };
+
+    await scriptRef.set(scriptData);
+
+    // Google Cloud Natural Language API configuration
+    const document = {
+      content: script,
+      type: 'PLAIN_TEXT',
+    };
+
+    const features = {
+      extractSyntax: true,
+      extractEntities: true,
+      extractDocumentSentiment: true,
+      extractEntitySentiment: true,
+    };
+
+    const request = {
+      document,
+      features,
+      encodingType: 'UTF8',
+    };
+
+    // Call Google Cloud Natural Language API
+    const [moderationResult] = await languageClient.moderateText(request);
+    const [classificationResult] = await languageClient.classifyText(request);
+    const [entityResult] = await languageClient.analyzeEntities(request);
+    const analysisResult = {
+      moderationResult: moderationResult,
+      classificationResult: classificationResult,
+      entityResult: entityResult
+    };
+
+    console.log('Cloud Natural Language Analysis Result:', analysisResult);
+
+    // Save the analysis result in Firestore
+    await scriptRef.update({
+      analysisResult,
+      status: 'processed',
+    });
+
+    // Respond with the analysis result
+    return res.status(200).json({
+      message: 'Presampling completed!',
+      analysisResult,
+    });
+  } catch (error) {
+    console.error('Error during presampling:', error);
+
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Internal server error.' });
+    }
+  }
+});
 
 router.post("/emotion-analysis", authenticate, async (req, res) => {
   const { type, region, identity, brand, script } = req.body;
@@ -77,6 +158,56 @@ router.post("/emotion-analysis", authenticate, async (req, res) => {
     }
   }
 });
+
+router.post("/emotion-analysis-stream", authenticate, async (req, res) => {
+  const { type, region, identity, brand, script } = req.body;
+
+  if (!type || !region || !identity || !script || script.length < 20 || script.length > 2000) {
+    return res.status(400).json({
+      error: "Invalid input. Ensure all required fields are provided and script length is between 20 and 2000 words.",
+    });
+  }
+
+  let scriptRef;
+  try {
+    const userId = req.user.uid; // Get the authenticated user's ID
+
+    // Store script metadata in Firestore
+    scriptRef = db.collection("scripts").doc();
+    const scriptData = {
+      userId,
+      type,
+      region,
+      identity,
+      brand: brand || null,
+      script,
+      status: "pending",
+      createdAt: new Date(),
+    };
+
+    await scriptRef.set(scriptData);
+
+    // Set proper headers for JSONL streaming
+    res.setHeader('Content-Type', 'application/x-ndjson');
+
+    // Stream content from Vertex AI to the client
+    await processScriptWithVertexAIStream(script, sentimentInstructions, res);
+
+    // Firestore update as a background task
+    scriptRef.update({ status: "processed" }).catch((updateError) => {
+      console.error("Failed to update Firestore after streaming:", updateError);
+    });
+  } catch (error) {
+    console.error("Error processing script:", error);
+
+    // Ensure headers are not sent again
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error." });
+    }
+  }
+});
+
+
 
 const processAggregatedData = (vertexResponse) => {
   const processedData = { Lines: [] };

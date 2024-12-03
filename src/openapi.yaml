@@ -78,6 +78,126 @@ paths:
           description: Missing required fields
         '500':
           description: Internal server error
+  /scripts/presampling:
+    post:
+      summary: Analyze a script using Google Cloud Natural Language API
+      description: Takes in a script text and performs analysis including sentiment, entities, and syntax using the Google Cloud Natural Language API.
+      operationId: analyzeScript
+      tags:
+        - ScriptAI
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Script data to be analyzed
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - type
+                - region
+                - identity
+                - script
+              properties:
+                type:
+                  type: string
+                  description: The type of the script (e.g., AD, Product)
+                  example: AD
+                region:
+                  type: string
+                  description: The region associated with the script (e.g., India)
+                  example: India
+                identity:
+                  type: string
+                  description: The identity of the script (e.g., Product)
+                  example: Product
+                brand:
+                  type: string
+                  description: The brand name associated with the script (optional)
+                  example: Lacto Calamine
+                script:
+                  type: string
+                  description: The script text to be analyzed
+                  example: |
+                    Film opens with Sindhu entering a jogging track in a stadium...
+      responses:
+        '200':
+          description: Successful analysis of the script
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Presampling completed!"
+                  analysisResult:
+                    type: object
+                    properties:
+                      documentSentiment:
+                        type: object
+                        properties:
+                          score:
+                            type: number
+                            format: float
+                            description: Sentiment score of the document
+                            example: 0.8
+                          magnitude:
+                            type: number
+                            format: float
+                            description: Magnitude of sentiment in the document
+                            example: 1.2
+                      entities:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              description: Entity name
+                              example: Sindhu
+                            type:
+                              type: string
+                              description: Type of entity
+                              example: PERSON
+                            salience:
+                              type: number
+                              format: float
+                              description: Salience score of the entity
+                              example: 0.9
+                      syntax:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            text:
+                              type: string
+                              description: Token text
+                              example: "Film"
+                            partOfSpeech:
+                              type: string
+                              description: Part of speech for the token
+                              example: NOUN
+        '400':
+          description: Invalid input parameters or missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid input. Ensure all required fields are provided and script length is between 20 and 2000 words."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
   /scripts/emotion-analysis:
     post:
       summary: Process a script for emotion analysis using Vertex AI
@@ -277,6 +397,108 @@ paths:
                   message:
                     type: string
                     example: "No scripts found for the user."
+        '401':
+          description: Unauthorized - No or invalid token provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No token provided."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
+  /scripts/emotion-analysis-stream:
+    post:
+      summary: Process a script for emotion analysis using Vertex AI streaming
+      tags:
+        - ScriptAI
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: Type of script (e.g., AD)
+                  example: "AD"
+                region:
+                  type: string
+                  description: Primary country or region
+                  example: "India"
+                identity:
+                  type: string
+                  description: What the script is about (e.g., Product, Marketing, Company)
+                  example: "Product"
+                brand:
+                  type: string
+                  description: Brand name (optional)
+                  example: "Lacto Calamine"
+                script:
+                  type: string
+                  description: The content of the script (20 to 2000 words)
+                  example: "Film opens with Sindhu entering a jogging track in a stadium..."
+      responses:
+        '200':
+          description: Script processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Script processed successfully."
+                  data:
+                    type: object
+                    properties:
+                      lines:
+                        type: array
+                        description: Array of analyzed lines from the script
+                        items:
+                          type: object
+                          properties:
+                            lineNumber:
+                              type: integer
+                              example: 1
+                            content:
+                              type: string
+                              example: "The scene opens with a sunset over a quiet beach."
+                            language:
+                              type: string
+                              example: "English"
+                            sentimentEmotion:
+                              type: string
+                              example: "Joy"
+                            valence:
+                              type: number
+                              example: 9.46
+                            arousal:
+                              type: number
+                              example: 1.3
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid input. Ensure all required fields are provided and script length is between 20 and 2000 words."
         '401':
           description: Unauthorized - No or invalid token provided
           content:
