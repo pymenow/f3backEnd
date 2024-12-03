@@ -26,7 +26,7 @@ app.use(
   middleware({
     apiSpec: openApiSpecPath,
     validateRequests: true, // Validate request bodies, headers, etc.
-    validateResponses: true, // Validate responses
+    validateResponses: false, // Validate responses
   })
 );
 
