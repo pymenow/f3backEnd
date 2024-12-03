@@ -30,11 +30,11 @@ paths:
                   type: string
                   description: Firebase ID token
       responses:
-        '200':
+        "200":
           description: User authenticated successfully
-        '401':
+        "401":
           description: Invalid or expired token
-        '500':
+        "500":
           description: Internal server error
   /auth/register:
     post:
@@ -72,11 +72,11 @@ paths:
                   type: string
                   description: URL of the user's profile picture (optional)
       responses:
-        '201':
+        "201":
           description: User registered successfully
-        '400':
+        "400":
           description: Missing required fields
-        '500':
+        "500":
           description: Internal server error
   /scripts/presampling:
     post:
@@ -94,11 +94,16 @@ paths:
             schema:
               type: object
               required:
+                - title
                 - type
                 - region
                 - identity
                 - script
               properties:
+                title:
+                  type: string
+                  description: The title of the script
+                  example: Lacto Calamine AD
                 type:
                   type: string
                   description: The type of the script (e.g., AD, Product)
@@ -121,7 +126,7 @@ paths:
                   example: |
                     Film opens with Sindhu entering a jogging track in a stadium...
       responses:
-        '200':
+        "200":
           description: Successful analysis of the script
           content:
             application/json:
@@ -178,7 +183,7 @@ paths:
                               type: string
                               description: Part of speech for the token
                               example: NOUN
-        '400':
+        "400":
           description: Invalid input parameters or missing required fields
           content:
             application/json:
@@ -188,7 +193,7 @@ paths:
                   error:
                     type: string
                     example: "Invalid input. Ensure all required fields are provided and script length is between 20 and 2000 words."
-        '500':
+        "500":
           description: Internal server error
           content:
             application/json:
@@ -211,29 +216,20 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - userID
+                - scriptID
               properties:
-                type:
+                userID:
                   type: string
-                  description: Type of script (e.g., AD)
-                  example: "AD"
-                region:
+                  description: The ID of the authenticated user
+                  example: "user123"
+                scriptID:
                   type: string
-                  description: Primary country or region
-                  example: "India"
-                identity:
-                  type: string
-                  description: What the script is about (e.g., Product, Marketing, Company)
-                  example: "Product"
-                brand:
-                  type: string
-                  description: Brand name (optional)
-                  example: "Lacto Calamine"
-                script:
-                  type: string
-                  description: The content of the script (20 to 2000 words)
-                  example: "Film opens with Sindhu entering a jogging track in a stadium..."
+                  description: The unique ID of the script to process
+                  example: "script456"
       responses:
-        '200':
+        "200":
           description: Script processed successfully
           content:
             application/json:
@@ -245,32 +241,8 @@ paths:
                     example: "Script processed successfully."
                   data:
                     type: object
-                    properties:
-                      lines:
-                        type: array
-                        description: Array of analyzed lines from the script
-                        items:
-                          type: object
-                          properties:
-                            lineNumber:
-                              type: integer
-                              example: 1
-                            content:
-                              type: string
-                              example: "The scene opens with a sunset over a quiet beach."
-                            language:
-                              type: string
-                              example: "English"
-                            sentimentEmotion:
-                              type: string
-                              example: "Joy"
-                            valence:
-                              type: number
-                              example: 9.46
-                            arousal:
-                              type: number
-                              example: 1.3
-        '400':
+                    description: "The response data will be defined as this evolves."
+        "400":
           description: Invalid input
           content:
             application/json:
@@ -279,8 +251,8 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: "Invalid input. Ensure all required fields are provided and script length is between 20 and 2000 words."
-        '401':
+                    example: "Invalid input. Ensure userID and scriptID are provided."
+        "401":
           description: Unauthorized - No or invalid token provided
           content:
             application/json:
@@ -290,7 +262,27 @@ paths:
                   error:
                     type: string
                     example: "No token provided."
-        '500':
+        "403":
+          description: Forbidden - User is not authorized to access this script
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized request. User does not own the script."
+        "404":
+          description: Script not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Script not found."
+        "500":
           description: Internal server error
           content:
             application/json:
@@ -307,7 +299,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Scripts retrieved successfully
           content:
             application/json:
@@ -387,7 +379,7 @@ paths:
                           format: date-time
                           description: Timestamp when the script was created
                           example: "2024-12-01T12:00:00.000Z"
-        '404':
+        "404":
           description: No scripts found for the user
           content:
             application/json:
@@ -397,7 +389,7 @@ paths:
                   message:
                     type: string
                     example: "No scripts found for the user."
-        '401':
+        "401":
           description: Unauthorized - No or invalid token provided
           content:
             application/json:
@@ -407,7 +399,7 @@ paths:
                   error:
                     type: string
                     example: "No token provided."
-        '500':
+        "500":
           description: Internal server error
           content:
             application/json:
@@ -417,9 +409,10 @@ paths:
                   error:
                     type: string
                     example: "Internal server error."
+
   /scripts/emotion-analysis-stream:
     post:
-      summary: Process a script for emotion analysis using Vertex AI streaming
+      summary: Process a script for emotion analysis using Vertex AI Stream
       tags:
         - ScriptAI
       security:
@@ -430,29 +423,20 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - userID
+                - scriptID
               properties:
-                type:
+                userID:
                   type: string
-                  description: Type of script (e.g., AD)
-                  example: "AD"
-                region:
+                  description: The ID of the authenticated user
+                  example: "user123"
+                scriptID:
                   type: string
-                  description: Primary country or region
-                  example: "India"
-                identity:
-                  type: string
-                  description: What the script is about (e.g., Product, Marketing, Company)
-                  example: "Product"
-                brand:
-                  type: string
-                  description: Brand name (optional)
-                  example: "Lacto Calamine"
-                script:
-                  type: string
-                  description: The content of the script (20 to 2000 words)
-                  example: "Film opens with Sindhu entering a jogging track in a stadium..."
+                  description: The unique ID of the script to process
+                  example: "script456"
       responses:
-        '200':
+        "200":
           description: Script processed successfully
           content:
             application/json:
@@ -464,32 +448,8 @@ paths:
                     example: "Script processed successfully."
                   data:
                     type: object
-                    properties:
-                      lines:
-                        type: array
-                        description: Array of analyzed lines from the script
-                        items:
-                          type: object
-                          properties:
-                            lineNumber:
-                              type: integer
-                              example: 1
-                            content:
-                              type: string
-                              example: "The scene opens with a sunset over a quiet beach."
-                            language:
-                              type: string
-                              example: "English"
-                            sentimentEmotion:
-                              type: string
-                              example: "Joy"
-                            valence:
-                              type: number
-                              example: 9.46
-                            arousal:
-                              type: number
-                              example: 1.3
-        '400':
+                    description: "The response data will be defined as this evolves."
+        "400":
           description: Invalid input
           content:
             application/json:
@@ -498,8 +458,8 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: "Invalid input. Ensure all required fields are provided and script length is between 20 and 2000 words."
-        '401':
+                    example: "Invalid input. Ensure userID and scriptID are provided."
+        "401":
           description: Unauthorized - No or invalid token provided
           content:
             application/json:
@@ -509,7 +469,27 @@ paths:
                   error:
                     type: string
                     example: "No token provided."
-        '500':
+        "403":
+          description: Forbidden - User is not authorized to access this script
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized request. User does not own the script."
+        "404":
+          description: Script not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Script not found."
+        "500":
           description: Internal server error
           content:
             application/json:
@@ -546,7 +526,7 @@ paths:
                 - email
                 - password
       responses:
-        '200':
+        "200":
           description: Token retrieved successfully.
           content:
             application/json:
@@ -569,10 +549,10 @@ paths:
                     description: Firebase authentication token.
                     example: eyJhbGciOiJSUzI1NiIsImtpZCI6ImZ...
                   expiresIn:
-                   type: string
-                   description: Validity of token in seconds from creation
-                   example: 3600 - 1Hour
-        '400':
+                    type: string
+                    description: Validity of token in seconds from creation
+                    example: 3600 - 1Hour
+        "400":
           description: Missing or invalid parameters.
           content:
             application/json:
@@ -582,7 +562,7 @@ paths:
                   error:
                     type: string
                     example: Email and password are required.
-        '500':
+        "500":
           description: Server error or Firebase authentication failure.
           content:
             application/json:
@@ -610,7 +590,7 @@ paths:
                   description: A valid refresh token issued by Firebase.
                   example: "AE4bGJv...cih8YQ"
       responses:
-        '200':
+        "200":
           description: Token refreshed successfully.
           content:
             application/json:
@@ -632,7 +612,7 @@ paths:
                     type: string
                     description: Time in seconds until the token expires.
                     example: "3600"
-        '400':
+        "400":
           description: Missing or invalid refresh token.
           content:
             application/json:
@@ -642,7 +622,7 @@ paths:
                   error:
                     type: string
                     example: Refresh token is required.
-        '500':
+        "500":
           description: Server error or failure to refresh the token.
           content:
             application/json:

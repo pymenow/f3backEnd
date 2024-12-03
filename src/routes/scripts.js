@@ -12,12 +12,12 @@ const db = getFirestore();
 const languageClient = new LanguageServiceClient();
 
 router.post('/presampling', authenticate, async (req, res) => {
-  const { type, region, identity, brand, script } = req.body;
+  const { type, region, identity, brand, script, title } = req.body;
 
   // Validate input
-  if (!type || !region || !identity || !script || script.length < 20 || script.length > 2000) {
+  if (!type || !region || !identity || !script || !title || script.length < 20 || script.length > 2000) {
     return res.status(400).json({
-      error: 'Invalid input. Ensure all required fields are provided and script length is between 20 and 2000 words.',
+      error: 'Invalid input. Ensure all required fields are provided, title is included, and script length is between 20 and 2000 words.',
     });
   }
 
@@ -33,6 +33,8 @@ router.post('/presampling', authenticate, async (req, res) => {
       identity,
       brand: brand || null,
       script,
+      title,
+      version: 1, // Default version
       status: 'pending',
       createdAt: new Date(),
     };
@@ -65,21 +67,22 @@ router.post('/presampling', authenticate, async (req, res) => {
     const analysisResult = {
       moderationResult: moderationResult,
       classificationResult: classificationResult,
-      entityResult: entityResult
+      entityResult: entityResult,
     };
 
     console.log('Cloud Natural Language Analysis Result:', analysisResult);
 
-    // Save the analysis result in Firestore
+    // Save the analysis result in Firestore under the 'presampling' column
     await scriptRef.update({
-      analysisResult,
+      presampling: analysisResult,
       status: 'processed',
     });
 
-    // Respond with the analysis result
+    // Respond with the Script ID & Analysis Result
     return res.status(200).json({
       message: 'Presampling completed!',
-      analysisResult,
+      scriptId: scriptRef.id, // Return the ID of the saved script
+      data: analysisResult
     });
   } catch (error) {
     console.error('Error during presampling:', error);
@@ -90,110 +93,98 @@ router.post('/presampling', authenticate, async (req, res) => {
   }
 });
 
-router.post("/emotion-analysis", authenticate, async (req, res) => {
-  const { type, region, identity, brand, script } = req.body;
+router.post('/emotion-analysis', authenticate, async (req, res) => {
+  const { userID, scriptID } = req.body;
 
   // Validate input
-  if (
-    !type ||
-    !region ||
-    !identity ||
-    !script ||
-    script.length < 20 ||
-    script.length > 2000
-  ) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "Invalid input. Ensure all required fields are provided and script length is between 20 and 2000 words.",
-      });
+  if (!userID || !scriptID) {
+    return res.status(400).json({ error: 'User ID and Script ID are required.' });
   }
 
   try {
-    const userId = req.user.uid; // Get the authenticated user's ID
+    const userId = req.user.uid;
 
-    // Store script metadata in Firestore
-    const scriptRef = db.collection("scripts").doc();
-    const scriptData = {
-      userId,
-      type,
-      region,
-      identity,
-      brand: brand || null,
-      script,
-      status: "pending",
-      createdAt: new Date(),
-    };
+    // Authorize the request
+    if (userId !== userID) {
+      return res.status(403).json({ error: 'Unauthorized request.' });
+    }
 
-    await scriptRef.set(scriptData);
+    // Fetch the script from Firestore
+    const scriptRef = db.collection('scripts').doc(scriptID);
+    const scriptDoc = await scriptRef.get();
 
-    // Process the script with Vertex AI to get the final response
-    const vertexResponse = await processScriptWithVertexAI(
-      script,
-      sentimentInstructions
-    );
-    console.log("Vertex AI Response:", vertexResponse);
+    if (!scriptDoc.exists || scriptDoc.data().userId !== userId) {
+      return res.status(404).json({ error: 'Script not found or unauthorized access.' });
+    }
+
+    const { script } = scriptDoc.data();
+
+    // Process the script with Vertex AI
+    const vertexResponse = await processScriptWithVertexAI(script, sentimentInstructions);
+    console.log('Vertex AI Response:', vertexResponse);
 
     // Post-process the Vertex AI response into the desired structure
     const finalOutput = processAggregatedData(vertexResponse);
 
-    // Save the final output in Firestore
+    // Save the analysis result in Firestore under the 'emotionAnalysis' column
     await scriptRef.update({
-      vertexResponse: finalOutput,
-      status: "processed",
+      emotionAnalysis: finalOutput,
     });
 
-    // Respond with the final output
+    // Respond with the processed data
     return res.status(200).json({
-      message: "Processing completed!",
+      message: 'Emotion analysis completed!',
       finalOutput,
     });
   } catch (error) {
-    console.error("Error processing script:", error);
+    console.error('Error during emotion analysis:', error);
 
-    // Only send the response if headers are not already sent
     if (!res.headersSent) {
-      res.status(500).json({ error: "Internal server error." });
+      res.status(500).json({ error: 'Internal server error.' });
     }
   }
 });
 
-router.post("/emotion-analysis-stream", authenticate, async (req, res) => {
-  const { type, region, identity, brand, script } = req.body;
 
-  if (!type || !region || !identity || !script || script.length < 20 || script.length > 2000) {
+router.post("/emotion-analysis-stream", authenticate, async (req, res) => {
+  const { userID, scriptID } = req.body;
+
+  // Validate input
+  if (!userID || !scriptID) {
     return res.status(400).json({
-      error: "Invalid input. Ensure all required fields are provided and script length is between 20 and 2000 words.",
+      error: "Invalid input. Ensure userID and scriptID are provided.",
     });
   }
 
-  let scriptRef;
   try {
     const userId = req.user.uid; // Get the authenticated user's ID
 
-    // Store script metadata in Firestore
-    scriptRef = db.collection("scripts").doc();
-    const scriptData = {
-      userId,
-      type,
-      region,
-      identity,
-      brand: brand || null,
-      script,
-      status: "pending",
-      createdAt: new Date(),
-    };
+    // Ensure the user is authorized to access the script
+    if (userID !== userId) {
+      return res.status(403).json({
+        error: "Unauthorized request. User does not own the script.",
+      });
+    }
 
-    await scriptRef.set(scriptData);
+    // Retrieve the script from Firestore
+    const scriptRef = db.collection("scripts").doc(scriptID);
+    const scriptDoc = await scriptRef.get();
+
+    if (!scriptDoc.exists) {
+      return res.status(404).json({
+        error: "Script not found.",
+      });
+    }
+
+    const scriptData = scriptDoc.data();
 
     // Set proper headers for JSONL streaming
-    res.setHeader('Content-Type', 'application/x-ndjson');
+    res.setHeader("Content-Type", "application/x-ndjson");
 
     // Stream content from Vertex AI to the client
-    await processScriptWithVertexAIStream(script, sentimentInstructions, res);
+    await processScriptWithVertexAIStream(scriptData.script, sentimentInstructions, res);
 
-    // Firestore update as a background task
+    // Update Firestore with the processed status in a background task
     scriptRef.update({ status: "processed" }).catch((updateError) => {
       console.error("Failed to update Firestore after streaming:", updateError);
     });
@@ -206,6 +197,7 @@ router.post("/emotion-analysis-stream", authenticate, async (req, res) => {
     }
   }
 });
+
 
 
 
