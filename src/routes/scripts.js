@@ -120,61 +120,11 @@ router.post(
   handleVertexAnalysis(scriptInfoInstructions, "scriptInfo")
 );
 
-router.post("/emotion-analysis-stream", authenticate, async (req, res) => {
-  const { userID, scriptID } = req.body;
-
-  // Validate input
-  if (!userID || !scriptID) {
-    return res.status(400).json({
-      error: "Invalid input. Ensure userID and scriptID are provided.",
-    });
-  }
-
-  try {
-    const userId = req.user.uid; // Get the authenticated user's ID
-
-    // Ensure the user is authorized to access the script
-    if (userID !== userId) {
-      return res.status(403).json({
-        error: "Unauthorized request. User does not own the script.",
-      });
-    }
-
-    // Retrieve the script from Firestore
-    const scriptRef = db.collection("scripts").doc(scriptID);
-    const scriptDoc = await scriptRef.get();
-
-    if (!scriptDoc.exists) {
-      return res.status(404).json({
-        error: "Script not found.",
-      });
-    }
-
-    const scriptData = scriptDoc.data();
-
-    // Set proper headers for JSONL streaming
-    res.setHeader("Content-Type", "application/x-ndjson");
-
-    // Stream content from Vertex AI to the client
-    await processScriptWithVertexAI(
-      scriptData.script,
-      sentimentInstructions,
-      res
-    );
-
-    // Update Firestore with the processed status in a background task
-    scriptRef.update({ status: "processed" }).catch((updateError) => {
-      console.error("Failed to update Firestore after streaming:", updateError);
-    });
-  } catch (error) {
-    console.error("Error processing script:", error);
-
-    // Ensure headers are not sent again
-    if (!res.headersSent) {
-      res.status(500).json({ error: "Internal server error." });
-    }
-  }
-});
+router.post(
+  "/emotion-analysis-stream",
+  authenticate,
+  handleVertexAnalysis(sentimentInstructions, "emotionAnalysis", { stream: true })
+);
 
 router.get("/get-emotion-analysis", authenticate, async (req, res) => {
   try {

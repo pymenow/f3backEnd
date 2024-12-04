@@ -1,7 +1,4 @@
-const {
-  processScriptWithVertexAI,
-  processScriptWithVertexAIStream,
-} = require("../AI/google/vertex");
+const { processScriptWithVertexAI } = require("../AI/google/vertex");
 
 // Utility functions for validating input, authorizing requests, fetching scripts, and processing data
 const validateInput = (userID, scriptID) => {
