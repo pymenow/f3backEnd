@@ -1,0 +1,74 @@
+paths: 
+  /auth/getToken:
+    post:
+      summary: Retrieve an authentication token
+      description: Endpoint to retrieve an ID token using email and password from Firebase Authentication.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: User's email address.
+                  example: vivek@fram3.ai
+                password:
+                  type: string
+                  format: password
+                  description: User's password.
+                  example: YourPassword123
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: Token retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Token retrieved successfully!
+                  displayName:
+                    type: string
+                    description: User's Display Name
+                    example: Vivek Ramchander
+                  token:
+                    type: string
+                    description: Firebase authentication token.
+                    example: eyJhbGciOiJSUzI1NiIsImtpZCI6ImZ...
+                  refreshToken:
+                    type: string
+                    description: Firebase authentication token.
+                    example: eyJhbGciOiJSUzI1NiIsImtpZCI6ImZ...
+                  expiresIn:
+                    type: string
+                    description: Validity of token in seconds from creation
+                    example: 3600 - 1Hour
+        "400":
+          description: Missing or invalid parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Email and password are required.
+        "500":
+          description: Server error or Firebase authentication failure.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Failed to retrieve token.

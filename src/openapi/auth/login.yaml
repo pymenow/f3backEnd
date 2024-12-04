@@ -1,0 +1,25 @@
+paths:
+  /auth/login:
+    post:
+      summary: Authenticate user with ID token
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: Firebase ID token
+      responses:
+        "200":
+          description: User authenticated successfully
+        "401":
+          description: Invalid or expired token
+        "500":
+          description: Internal server error

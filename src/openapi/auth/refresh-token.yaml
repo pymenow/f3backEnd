@@ -1,0 +1,61 @@
+paths:
+  /auth/refreshToken:
+    post:
+      summary: Refresh authentication token
+      description: Renew an ID token using a valid refresh token from Firebase Authentication.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+                  description: A valid refresh token issued by Firebase.
+                  example: "AE4bGJv...cih8YQ"
+      responses:
+        "200":
+          description: Token refreshed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Token refreshed successfully!
+                  token:
+                    type: string
+                    description: The new ID token.
+                    example: "eyJhbGciOiJSUzI1NiIsImtpZCI6ImZ..."
+                  refreshToken:
+                    type: string
+                    description: The new refresh token.
+                    example: "AE4bGJv...cih8YQ"
+                  expiresIN:
+                    type: string
+                    description: Time in seconds until the token expires.
+                    example: "3600"
+        "400":
+          description: Missing or invalid refresh token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Refresh token is required.
+        "500":
+          description: Server error or failure to refresh the token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Failed to refresh token.

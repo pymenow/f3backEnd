@@ -1,0 +1,90 @@
+paths:
+  /scripts/emotion-analysis-stream:
+    post:
+      summary: Process a script for emotion analysis using Vertex AI
+      tags:
+        - ScriptAI
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - userID
+                - scriptID
+              properties:
+                userID:
+                  type: string
+                  description: The ID of the authenticated user
+                  example: "user123"
+                scriptID:
+                  type: string
+                  description: The unique ID of the script to process
+                  example: "script456"
+      responses:
+        "200":
+          description: Script processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Script processed successfully."
+                  data:
+                    type: object
+                    description: "The response data will be defined as this evolves."
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid input. Ensure userID and scriptID are provided."
+        "401":
+          description: Unauthorized - No or invalid token provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No token provided."
+        "403":
+          description: Forbidden - User is not authorized to access this script
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized request. User does not own the script."
+        "404":
+          description: Script not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Script not found."
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."

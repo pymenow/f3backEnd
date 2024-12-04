@@ -233,7 +233,7 @@ const processAggregatedData = (vertexResponse) => {
   return processedData;
 };
 
-router.get("/emotion-analysis", authenticate, async (req, res) => {
+router.get("/get-emotion-analysis", authenticate, async (req, res) => {
   try {
     const userId = req.user.uid;
 

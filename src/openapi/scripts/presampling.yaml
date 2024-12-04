@@ -1,0 +1,55 @@
+paths:
+  /scripts/presampling:
+    post:
+      summary: Analyze a script using Google Cloud Natural Language API
+      description: Takes in a script text and performs analysis including sentiment, entities, and syntax using the Google Cloud Natural Language API.
+      operationId: analyzeScript
+      tags:
+        - ScriptAI
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Script data to be analyzed
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - type
+                - region
+                - identity
+                - script
+              properties:
+                title:
+                  type: string
+                  description: The title of the script
+                  example: Lacto Calamine AD
+                type:
+                  type: string
+                  description: The type of the script (e.g., AD, Product)
+                  example: AD
+                region:
+                  type: string
+                  description: The region associated with the script (e.g., India)
+                  example: India
+                identity:
+                  type: string
+                  description: The identity of the script (e.g., Product)
+                  example: Product
+                brand:
+                  type: string
+                  description: The brand name associated with the script (optional)
+                  example: Lacto Calamine
+                script:
+                  type: string
+                  description: The script text to be analyzed
+                  example: |
+                    Film opens with Sindhu entering a jogging track in a stadium...
+      responses:
+        "200":
+          description: Successful analysis of the script
+        "400":
+          description: Invalid input parameters or missing required fields
+        "500":
+          description: Internal server error

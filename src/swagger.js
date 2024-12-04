@@ -1,26 +1,30 @@
 const swaggerUi = require('swagger-ui-express');
-const yaml = require('js-yaml');
-const fs = require('fs');
-const path = require('path'); // Import path module
+const SwaggerParser = require('@apidevtools/swagger-parser');
+const path = require('path');
 const { swaggerAuth } = require('./middleware/authMiddleware');
 
-module.exports = (app) => {
-  // Resolve the absolute path to the OpenAPI spec file
+module.exports = async (app) => {
   const openApiSpecPath = path.resolve(__dirname, './openapi.yaml');
-  
-  // Load OpenAPI spec from the YAML file
-  const openApiSpec = yaml.load(fs.readFileSync(openApiSpecPath, 'utf8'));
 
-  // Dynamically determine the base URL
-  const host = process.env.HOST || 'localhost';
-  const port = process.env.PORT || 8080;
-  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  try {
+    // Dereference the OpenAPI spec
+    const dereferencedSpec = await SwaggerParser.dereference(openApiSpecPath);
 
-  // Set the server URL dynamically
-  openApiSpec.servers = [
-    { url: `${protocol}://${host}${process.env.NODE_ENV === 'production' ? '' : `:${port}`}`, description: 'Dynamic server' }
-  ];
+    // Dynamically determine the base URL
+    const host = process.env.HOST || 'localhost';
+    const port = process.env.PORT || 3001;
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
 
-  // Serve Swagger UI for OpenAPI documentation
-  app.use('/api-docs', swaggerAuth, swaggerUi.serve, swaggerUi.setup(openApiSpec));
+    // Add the servers dynamically
+    dereferencedSpec.servers = [
+      { url: `${protocol}://${host}${process.env.NODE_ENV === 'production' ? '' : `:${port}`}`, description: 'Dynamic server' },
+    ];
+
+    // Serve Swagger UI
+    app.use('/api-docs', swaggerAuth, swaggerUi.serve, swaggerUi.setup(dereferencedSpec));
+    console.log('Swagger UI is available at /api-docs');
+  } catch (err) {
+    console.error('Error loading OpenAPI spec:', err.message);
+    process.exit(1);
+  }
 };

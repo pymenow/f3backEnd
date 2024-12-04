@@ -1,0 +1,43 @@
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  description: User's first name
+                lastName:
+                  type: string
+                  description: User's last name
+                email:
+                  type: string
+                  description: User's email address
+                password:
+                  type: string
+                  description: User's password
+                phoneNumber:
+                  type: string
+                  description: User's phone number (optional)
+                displayName:
+                  type: string
+                  description: User's display name (optional)
+                photoURL:
+                  type: string
+                  description: URL of the user's profile picture (optional)
+      responses:
+        "201":
+          description: User registered successfully
+        "400":
+          description: Missing required fields
+        "500":
+          description: Internal server error
