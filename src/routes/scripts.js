@@ -2,8 +2,7 @@ const express = require("express");
 const { getFirestore } = require("firebase-admin/firestore");
 const { auth } = require("../firebase/firebaseConfig"); // Firebase Admin SDK
 const {
-  processScriptWithVertexAI,
-  processScriptWithVertexAIStream,
+  processScriptWithVertexAI
 } = require("../AI/google/vertex");
 
 const loadMarkdown = require("../common/loadMarkdown");
@@ -157,7 +156,7 @@ router.post("/emotion-analysis-stream", authenticate, async (req, res) => {
     res.setHeader("Content-Type", "application/x-ndjson");
 
     // Stream content from Vertex AI to the client
-    await processScriptWithVertexAIStream(
+    await processScriptWithVertexAI(
       scriptData.script,
       sentimentInstructions,
       res
