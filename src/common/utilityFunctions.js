@@ -100,17 +100,17 @@ const processAndSaveAnalysis = async (
   userId,
   scriptId,
   versionId,
-  fieldName, // This corresponds to analysisType
+  analysisType, // This corresponds to analysisType
   res = null
 ) => {
   const saveToFirestore = async (processedData) => {
     try {
       // Use addAnalysis to save the data
-      await addAnalysis(userId, scriptId, versionId, fieldName, processedData);
-      console.log(`Analysis saved for type: ${fieldName}`);
+      await addAnalysis(userId, scriptId, versionId, analysisType, processedData);
+      console.log(`Analysis saved for type: ${analysisType}`);
     } catch (error) {
       console.error(
-        `Error saving analysis for type: ${fieldName}`,
+        `Error saving analysis for type: ${analysisType}`,
         error.message
       );
       throw error;

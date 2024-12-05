@@ -1,7 +1,7 @@
 // Import necessary utilities
 const { getFirestore } = require("firebase-admin/firestore");
 const db = getFirestore();
-const { getScript } = require("../firebase/scriptStore");
+const { getScript, checkIfAnalysisExists } = require("../firebase/scriptStore");
 
 const {
   validateInput,
@@ -12,23 +12,36 @@ const {
 
 const handleAnalysis = (
   systemPrompt,
-  fieldName,
+  analysisType,
   options = { stream: false }
 ) => {
   return async (req, res) => {
     const { userId, scriptId, versionId } = req.body;
-
 
     try {
       // Validate and authorize
       validateInput(userId, scriptId);
       const authenticatedUserId = req.user.uid;
       authorizeRequest(authenticatedUserId, userId);
+      const exists = await checkIfAnalysisExists(
+        userId,
+        scriptId,
+        versionId,
+        analysisType
+      );
+
+      if (exists) {
+        return res.status(400).json({
+          error: `Analysis of type ${analysisType} already exists for versionId: ${versionId}.`,
+        });
+      }
 
       // Fetch script and specific version
       const scriptData = await getScript(userId, scriptId, versionId);
       if (!scriptData.version) {
-        throw new Error(`Version ${versionId || "current"} not found for script ${scriptId}.`);
+        throw new Error(
+          `Version ${versionId || "current"} not found for script ${scriptId}.`
+        );
       }
       const script = scriptData.version.content;
 
@@ -47,7 +60,7 @@ const handleAnalysis = (
           userId,
           scriptId,
           versionId || scriptData.currentVersion,
-          fieldName,
+          analysisType,
           res
         );
 
@@ -60,7 +73,7 @@ const handleAnalysis = (
           userId,
           scriptId,
           versionId || scriptData.currentVersion,
-          fieldName
+          analysisType
         );
 
         // Respond with the final output

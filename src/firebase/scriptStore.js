@@ -15,6 +15,42 @@ const ALLOWED_ANALYSIS_TYPES = [
   "images",
 ];
 
+/**
+ * Checks if an analysis of the specified type already exists for a script version.
+ * @param {string} userId - The ID of the user.
+ * @param {string} scriptId - The ID of the script.
+ * @param {string} versionId - The ID of the script version.
+ * @param {string} analysisType - The type of analysis to check.
+ * @returns {Promise<boolean>} - Returns true if the analysis exists, otherwise false.
+ */
+const checkIfAnalysisExists = async (userId, scriptId, versionId, analysisType) => {
+    try {
+      // Reference to the analyses subcollection
+      const analysesRef = db
+        .collection("users")
+        .doc(userId)
+        .collection("scripts")
+        .doc(scriptId)
+        .collection("versions")
+        .doc(versionId)
+        .collection("analyses");
+  
+      // Query for the specified analysis type
+      const existingAnalysis = await analysesRef
+        .where("analysisType", "==", analysisType)
+        .get();
+  
+      // Return true if the analysis exists, otherwise false
+      return !existingAnalysis.empty;
+    } catch (error) {
+      console.error(
+        `Error checking if analysis exists for analysisType: ${analysisType}, versionId: ${versionId}`,
+        error.message
+      );
+      throw new Error(`Failed to check analysis existence: ${error.message}`);
+    }
+  };
+
 const addAnalysis = async (
   userId,
   scriptId,
@@ -177,4 +213,4 @@ const getScript = async (userId, scriptId, versionId = null) => {
   }
 };
 
-module.exports = { addScript, addAnalysis, getScript };
+module.exports = { addScript, addAnalysis, getScript, checkIfAnalysisExists };
