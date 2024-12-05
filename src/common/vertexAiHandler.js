@@ -32,7 +32,7 @@ const handleAnalysis = (systemPrompt, fieldName, options = { stream: false }) =>
           res.setHeader("Content-Type", "application/x-ndjson");
   
           // Stream content from Vertex AI to the client
-          await processScriptWithVertexAI(script, systemPrompt, res);
+          await processAndSaveAnalysis(script, systemPrompt, scriptRef, fieldName, res);
   
           // Update Firestore with the processed status in a background task
           scriptRef.update({ status: "processed" }).catch((updateError) => {
