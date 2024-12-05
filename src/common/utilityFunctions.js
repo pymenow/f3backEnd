@@ -100,25 +100,23 @@ const processAndSaveAnalysis = async (
   fieldName,
   res = null
 ) => {
-  if (res) {
-    // Streaming mode
-    res.setHeader("Content-Type", "application/x-ndjson");
+  // Helper function to process and save data
+  const saveToFirestore = async (processedData) => {
+    const updateData = {};
+    updateData[fieldName] = processedData;
+    await scriptRef.update(updateData);
+  };
 
-    // Call Vertex AI in streaming mode
-    const accumulatedChunks = await processScriptWithVertexAI(
-      script,
-      systemPrompt,
-      res
-    );
+  // Helper function to aggregate streamed data
+  const aggregateStreamedData = (accumulatedChunks) => {
     const aggregatedData = accumulatedChunks.reduce(
       (acc, chunk) => {
-        // Extract content from each chunk
         const content = chunk.candidates?.[0]?.content || {};
         const usageMetadata = chunk.usageMetadata || null;
 
         // Combine content parts if they exist
         if (content.parts) {
-          acc.contentParts.push(...content.parts); // Concatenate parts
+          acc.contentParts.push(...content.parts);
         }
 
         // Preserve metadata and finishReason from the final chunk
@@ -135,29 +133,32 @@ const processAndSaveAnalysis = async (
     );
     aggregatedData.modelVersion =
       accumulatedChunks[0]?.modelVersion || "unknown";
-    const mergedData = mergeAggregatedData(aggregatedData);
+    return mergeAggregatedData(aggregatedData);
+  };
+
+  if (res) {
+    // Streaming mode
+    res.setHeader("Content-Type", "application/x-ndjson");
+    const accumulatedChunks = await processScriptWithVertexAI(
+      script,
+      systemPrompt,
+      res
+    );
+
+    const mergedData = aggregateStreamedData(accumulatedChunks);
     const processedData = processAggregatedData(mergedData);
     processedData.streamed = true;
-    const updateData = {};
-    updateData[fieldName] = processedData;
-    await scriptRef.update(updateData);
 
-    // No further processing or saving in streaming mode
-    return;
+    await saveToFirestore(processedData);
+    return; // Exit early for streaming mode
   }
 
   // Non-streaming mode
   const vertexResponse = await processScriptWithVertexAI(script, systemPrompt);
-
-  // Process the response data to extract required fields
   const processedData = processAggregatedData(vertexResponse);
   processedData.streamed = false;
 
-  // Save the final output to Firestore under the specified field name
-  const updateData = {};
-  updateData[fieldName] = processedData;
-  await scriptRef.update(updateData);
-
+  await saveToFirestore(processedData);
   return processedData;
 };
 
