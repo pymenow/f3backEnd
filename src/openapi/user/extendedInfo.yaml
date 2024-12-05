@@ -1,0 +1,70 @@
+paths:
+  /user/extendedInfo:
+    put:
+      summary: Create or update user's extended details
+      tags:
+        - User Management
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                address:
+                  type: object
+                  description: Address details of the user
+                  properties:
+                    street:
+                      type: string
+                      description: Street name
+                      example: "123 Elm St"
+                    city:
+                      type: string
+                      description: City name
+                      example: "Metropolis"
+                    state:
+                      type: string
+                      description: State name
+                      example: "NY"
+                    country:
+                      type: string
+                      description: Country name
+                      example: "USA"
+                    postalCode:
+                      type: string
+                      description: Postal code
+                      example: "12345"
+                preferences:
+                  type: object
+                  description: User preferences
+                  properties:
+                    theme:
+                      type: string
+                      description: Preferred theme
+                      example: "dark"
+                    language:
+                      type: string
+                      description: Preferred language
+                      example: "en"
+                genre:
+                  type: array
+                  description: List of genres associated with the user
+                  items:
+                    type: string
+                  example: ["Movies", "Ads", "Short Films"]
+                expertise:
+                  type: array
+                  description: List of expertise areas for the user
+                  items:
+                    type: string
+                  example: ["Script Writer", "Director"]
+      responses:
+        "200":
+          description: Extended details created or updated successfully
+        "400":
+          description: Invalid request or missing fields
+        "500":
+          description: Internal server error

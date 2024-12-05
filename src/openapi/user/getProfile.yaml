@@ -1,0 +1,66 @@
+paths:
+  /user/profile:
+    get:
+      summary: Get user profile details
+      tags:
+        - User Management
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: User profile details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Success message
+                    example: "User details retrieved successfully."
+                  data:
+                    type: object
+                    properties:
+                      firstName:
+                        type: string
+                        description: User's first name
+                        example: "John"
+                      lastName:
+                        type: string
+                        description: User's last name
+                        example: "Smith"
+                      email:
+                        type: string
+                        description: User's email address
+                        example: "john.smith@example.com"
+                      phoneNumber:
+                        type: string
+                        description: User's phone number
+                        example: "+1234567890"
+                      displayName:
+                        type: string
+                        description: User's display name
+                        example: "John S"
+                      profilePic:
+                        type: string
+                        description: URL of the user's profile picture
+                        example: "http://example.com/profile-pic.jpg"
+                      banner:
+                        type: string
+                        description: URL of the user's banner
+                        example: "http://example.com/banner.jpg"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        description: Timestamp of when the user profile was created
+                        example: "2024-01-01T00:00:00Z"
+                      role:
+                        type: string
+                        description: User's role
+                        example: "user"
+        "401":
+          description: Unauthorized - User is not authenticated
+        "404":
+          description: User not found
+        "500":
+          description: Internal server error
