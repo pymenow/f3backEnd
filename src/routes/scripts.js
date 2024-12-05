@@ -1,7 +1,7 @@
 const express = require("express");
 const { getFirestore } = require("firebase-admin/firestore");
 const { auth } = require("../firebase/firebaseConfig"); // Firebase Admin SDK
-const { processScriptWithVertexAI } = require("../AI/google/vertex");
+const { addScript, addAnalysis } = require("../firebase/scriptStore");
 
 const loadMarkdown = require("../common/loadMarkdown");
 const sentimentInstructions = loadMarkdown(
@@ -20,43 +20,32 @@ const db = getFirestore();
 const languageClient = new LanguageServiceClient();
 
 router.post("/presampling", authenticate, async (req, res) => {
-  const { type, region, identity, brand, script, title } = req.body;
+  const { title, description, script } = req.body;
 
   // Validate input
-  if (
-    !type ||
-    !region ||
-    !identity ||
-    !script ||
-    !title ||
-    script.length < 20 ||
-    script.length > 2000
-  ) {
+  if (!title || !description || !script) {
     return res.status(400).json({
       error:
-        "Invalid input. Ensure all required fields are provided, title is included, and script length is between 20 and 2000 words.",
+        "Invalid input. Ensure title, description, and script are provided.",
+    });
+  }
+
+  if (script.length < 20 || script.length > 2000) {
+    return res.status(400).json({
+      error: "Script length must be between 20 and 2000 characters.",
     });
   }
 
   try {
     const userId = req.user.uid; // Get the authenticated user's ID
 
-    // Store script metadata in Firestore
-    const scriptRef = db.collection("scripts").doc();
-    const scriptData = {
+    // Add the script and its first version to Firestore
+    const { scriptId, versionId } = await addScript(
       userId,
-      type,
-      region,
-      identity,
-      brand: brand || null,
-      script,
-      title,
-      version: 1, // Default version
-      status: "pending",
-      createdAt: new Date(),
-    };
-
-    await scriptRef.set(scriptData);
+      title, // Mapped to scriptTitle
+      description, // Mapped to description
+      script // Mapped to scriptContent
+    );
 
     // Google Cloud Natural Language API configuration
     const document = {
@@ -81,28 +70,39 @@ router.post("/presampling", authenticate, async (req, res) => {
     const [moderationResult] = await languageClient.moderateText(request);
     const [classificationResult] = await languageClient.classifyText(request);
     const [entityResult] = await languageClient.analyzeEntities(request);
-    const analysisResult = {
-      moderationResult: moderationResult,
-      classificationResult: classificationResult,
-      entityResult: entityResult,
-    };
 
-    console.log("Cloud Natural Language Analysis Result:", analysisResult);
+    // Add analyses to Firestore
+    await addAnalysis(
+      userId,
+      scriptId,
+      versionId,
+      "moderation",
+      moderationResult
+    );
+    await addAnalysis(
+      userId,
+      scriptId,
+      versionId,
+      "categories",
+      classificationResult
+    );
+    await addAnalysis(userId, scriptId, versionId, "entities", entityResult);
 
-    // Save the analysis result in Firestore under the 'presampling' column
-    await scriptRef.update({
-      presampling: analysisResult,
-      status: "processed",
-    });
+    console.log("Presampling analysis completed and stored.");
 
-    // Respond with the Script ID & Analysis Result
+    // Respond with the Script ID & Analysis Results
     return res.status(200).json({
-      message: "Presampling completed!",
-      scriptId: scriptRef.id, // Return the ID of the saved script
-      data: analysisResult,
+      message: "Presampling completed successfully!",
+      scriptId,
+      versionId,
+      analysisResults: {
+        moderation: moderationResult,
+        categories: classificationResult,
+        entities: entityResult,
+      },
     });
   } catch (error) {
-    console.error("Error during presampling:", error);
+    console.error("Error during presampling:", error.message);
 
     if (!res.headersSent) {
       res.status(500).json({ error: "Internal server error." });

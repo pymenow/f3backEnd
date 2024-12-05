@@ -1,8 +1,8 @@
 paths:
   /scripts/presampling:
     post:
-      summary: Analyze a script using Google Cloud Natural Language API
-      description: Takes in a script text and performs analysis including sentiment, entities, and syntax using the Google Cloud Natural Language API.
+      summary: Analyze a script using FRAM3 AI
+      description: Takes in a script text and performs analysis including moderation analysis, entity identification & classification, 
       operationId: analyzeScript
       tags:
         - ScriptAI
@@ -16,31 +16,17 @@ paths:
               type: object
               required:
                 - title
-                - type
-                - region
-                - identity
+                - description
                 - script
               properties:
                 title:
                   type: string
                   description: The title of the script
                   example: Lacto Calamine AD
-                type:
+                description:
                   type: string
-                  description: The type of the script (e.g., AD, Product)
-                  example: AD
-                region:
-                  type: string
-                  description: The region associated with the script (e.g., India)
-                  example: India
-                identity:
-                  type: string
-                  description: The identity of the script (e.g., Product)
-                  example: Product
-                brand:
-                  type: string
-                  description: The brand name associated with the script (optional)
-                  example: Lacto Calamine
+                  description: A one line description of the script
+                  example: Skin Care Advertisement
                 script:
                   type: string
                   description: The script text to be analyzed
