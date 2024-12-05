@@ -13,17 +13,22 @@ paths:
             schema:
               type: object
               required:
-                - userID
-                - scriptID
+                - userId
+                - scriptId
+                - versionId
               properties:
-                userID:
+                userId:
                   type: string
                   description: The ID of the authenticated user
-                  example: "user123"
-                scriptID:
+                  example: "JirLVB69ssMkGLUucFnLyslUXhh1"
+                scriptId:
                   type: string
                   description: The unique ID of the script to process
-                  example: "script456"
+                  example: "2uwbKngFuSj2q733FNJ2"
+                versionId:
+                  type: string
+                  description: The unique ID of the script to process
+                  example: "Qxnog9Cd9YeththPKP5B"
       responses:
         "200":
           description: Script processed successfully

@@ -1,4 +1,5 @@
 const { processScriptWithVertexAI } = require("../AI/google/vertex");
+const { addAnalysis } = require("../firebase/scriptStore");
 
 // Utility functions for validating input, authorizing requests, fetching scripts, and processing data
 const validateInput = (userID, scriptID) => {
@@ -96,15 +97,24 @@ const mergeAggregatedData = (aggregatedData) => {
 const processAndSaveAnalysis = async (
   script,
   systemPrompt,
-  scriptRef,
-  fieldName,
+  userId,
+  scriptId,
+  versionId,
+  fieldName, // This corresponds to analysisType
   res = null
 ) => {
-  // Helper function to process and save data
   const saveToFirestore = async (processedData) => {
-    const updateData = {};
-    updateData[fieldName] = processedData;
-    await scriptRef.update(updateData);
+    try {
+      // Use addAnalysis to save the data
+      await addAnalysis(userId, scriptId, versionId, fieldName, processedData);
+      console.log(`Analysis saved for type: ${fieldName}`);
+    } catch (error) {
+      console.error(
+        `Error saving analysis for type: ${fieldName}`,
+        error.message
+      );
+      throw error;
+    }
   };
 
   // Helper function to aggregate streamed data

@@ -1,6 +1,7 @@
 // Import necessary utilities
 const { getFirestore } = require("firebase-admin/firestore");
 const db = getFirestore();
+const { getScript } = require("../firebase/scriptStore");
 
 const {
   validateInput,
@@ -15,20 +16,25 @@ const handleAnalysis = (
   options = { stream: false }
 ) => {
   return async (req, res) => {
-    const { userID, scriptID } = req.body;
+    const { userId, scriptId, versionId } = req.body;
+
 
     try {
       // Validate and authorize
-      validateInput(userID, scriptID);
-      const authenticatedUserID = req.user.uid;
-      authorizeRequest(authenticatedUserID, userID);
+      validateInput(userId, scriptId);
+      const authenticatedUserId = req.user.uid;
+      authorizeRequest(authenticatedUserId, userId);
 
-      // Fetch script
-      const { scriptRef, script } = await fetchScript(
-        db,
-        scriptID,
-        authenticatedUserID
-      );
+      // Fetch script and specific version
+      const scriptData = await getScript(userId, scriptId, versionId);
+      if (!scriptData.version) {
+        throw new Error(`Version ${versionId || "current"} not found for script ${scriptId}.`);
+      }
+      const script = scriptData.version.content;
+
+      if (!script) {
+        throw new Error("Script content is missing or invalid.");
+      }
 
       if (options.stream) {
         // Streaming mode
@@ -38,24 +44,22 @@ const handleAnalysis = (
         await processAndSaveAnalysis(
           script,
           systemPrompt,
-          scriptRef,
+          userId,
+          scriptId,
+          versionId || scriptData.currentVersion,
           fieldName,
           res
         );
 
         // Update Firestore with the processed status in a background task
-        scriptRef.update({ status: "processed" }).catch((updateError) => {
-          console.error(
-            "Failed to update Firestore after streaming:",
-            updateError
-          );
-        });
       } else {
         // Non-streaming mode
         const finalOutput = await processAndSaveAnalysis(
           script,
           systemPrompt,
-          scriptRef,
+          userId,
+          scriptId,
+          versionId || scriptData.currentVersion,
           fieldName
         );
 
