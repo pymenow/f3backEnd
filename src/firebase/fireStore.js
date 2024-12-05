@@ -71,5 +71,31 @@ const createExtendedDetails = async (userId, extendedDetails) => {
   }
 };
 
+const updateUserDetails = async (userId, updatedDetails) => {
+  try {
+    // Ensure only non-email fields are updated
+    if (updatedDetails.email) {
+      throw new Error("Email updates are not allowed through this endpoint.");
+    }
+
+    // Update Firestore document
+    await db
+      .collection("users")
+      .doc(userId)
+      .update({
+        ...updatedDetails,
+        updatedAt: new Date(), // Track update time
+      });
+    console.log(`User details updated for userId: ${userId}`);
+  } catch (error) {
+    console.error("Error updating user details:", error.message);
+    throw error;
+  }
+};
+
 // Export Functions
-module.exports = { createUserDetails, createExtendedDetails };
+module.exports = {
+  createUserDetails,
+  createExtendedDetails,
+  updateUserDetails,
+};

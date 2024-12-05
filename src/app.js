@@ -8,6 +8,7 @@ const swagger = require('./swagger');
 const authRoutes = require('./routes/auth');
 const secureRoutes = require('./routes/secure');
 const scriptRoutes = require('./routes/scripts');
+const userRoutes = require('./routes/user');
 
 const app = express();
 app.use(bodyParser.json());
@@ -36,6 +37,7 @@ app.use(cors());
     app.use('/auth', authRoutes);
     app.use('/secure', secureRoutes);
     app.use('/scripts', scriptRoutes);
+    app.use('/user', userRoutes);
 
     // Error Handling Middleware
     app.use((err, req, res, next) => {
