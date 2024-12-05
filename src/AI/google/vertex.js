@@ -47,16 +47,18 @@ const processScriptWithVertexAI = async (script, systemInstructions, res = null)
     if (res) {
       // Streaming response
       const streamingResp = await generativeModel.generateContentStream(req);
+      const accumulatedChunks = [];
 
       // Iterate over the async iterable `stream`
       for await (const chunk of streamingResp.stream) {
         const chunkData = JSON.stringify(chunk);
+        accumulatedChunks.push(chunk);
         res.write(chunkData + '\n'); // Send each chunk to the client
       }
 
       // Close the response after streaming is done
       res.end();
-      return; // No return value for streaming
+      return accumulatedChunks; // No return value for streaming
     } else {
       // Standard response
       const response = await generativeModel.generateContent(req);
