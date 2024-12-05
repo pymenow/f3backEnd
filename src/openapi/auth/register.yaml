@@ -16,24 +16,35 @@ paths:
                 firstName:
                   type: string
                   description: User's first name
+                  example: "Satish"
                 lastName:
                   type: string
                   description: User's last name
+                  example: "MH"
                 email:
                   type: string
                   description: User's email address
+                  example: "satish.mh@fram3.ai"
                 password:
                   type: string
                   description: User's password
+                  example: "HelloWorl!@3"
                 phoneNumber:
                   type: string
                   description: User's phone number (optional)
+                  example: "+919945224003"
                 displayName:
                   type: string
                   description: User's display name (optional)
-                photoURL:
+                  example: "Satish MH"
+                profilePic:
                   type: string
                   description: URL of the user's profile picture (optional)
+                  example: "http://example.com/pic.png"
+                banner:
+                  type: string
+                  description: URL of the user's banner (optional)
+                  example:  http://example.com/banner.png
       responses:
         "201":
           description: User registered successfully
