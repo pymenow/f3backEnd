@@ -45,28 +45,37 @@ const createUserDetails = async (userId, userDetails) => {
   }
 };
 
-const createExtendedDetails = async (userId, extendedDetails) => {
-  const { phoneNumber, displayName, address, preferences, genre, expertise } =
-    extendedDetails;
+const createOrUpdateExtendedDetails = async (userId, extendedDetails) => {
+  const { address, preferences, genre, expertise } = extendedDetails;
 
   try {
-    // Write extended details to Firestore
+    // Write or update extended details in Firestore
     await db
       .collection("users")
       .doc(userId)
       .collection("extendedInfo")
       .doc("details")
-      .set({
-        phoneNumber: phoneNumber || null,
-        displayName: displayName || null,
-        address: address || null, // Object with `street`, `city`, `state`, `postalCode`
-        preferences: preferences || { theme: "light", language: "en" }, // Default preferences
-        genre: genre || [], // Default to empty array
-        expertise: expertise || [], // Default to empty array
-      });
-    console.log(`Extended details added for userId: ${userId}`);
+      .set(
+        {
+          address: address || {
+            street: "",
+            city: "",
+            state: "",
+            country: "",
+            postalCode: "",
+          }, // Default address structure
+          preferences: preferences || { theme: "light", language: "en" }, // Default preferences
+          genre: genre || [], // Default to empty array
+          expertise: expertise || [], // Default to empty array
+        },
+        { merge: true } // Use merge to update existing fields or create new ones
+      );
+    console.log(`Extended details created or updated for userId: ${userId}`);
   } catch (error) {
-    console.error("Error creating extended details:", error.message);
+    console.error(
+      "Error creating or updating extended details:",
+      error.message
+    );
     throw error;
   }
 };
@@ -93,9 +102,46 @@ const updateUserDetails = async (userId, updatedDetails) => {
   }
 };
 
+const getUserDetails = async (userId) => {
+  try {
+    // Fetch the main user document
+    const userDoc = await db.collection("users").doc(userId).get();
+
+    if (!userDoc.exists) {
+      console.log(`User with ID ${userId} not found.`);
+      return null; // Return null if the user does not exist
+    }
+
+    // Fetch the extendedInfo subcollection
+    const extendedInfoSnapshot = await db
+      .collection("users")
+      .doc(userId)
+      .collection("extendedInfo")
+      .get();
+
+    const extendedInfo = {};
+    extendedInfoSnapshot.forEach((doc) => {
+      extendedInfo[doc.id] = doc.data();
+    });
+
+    // Combine the main user details with extended info
+    return {
+      ...userDoc.data(),
+      extendedInfo,
+    };
+  } catch (error) {
+    console.error(
+      `Error fetching user details and extended info for ID ${userId}:`,
+      error.message
+    );
+    throw error; // Propagate the error to the caller
+  }
+};
+
 // Export Functions
 module.exports = {
   createUserDetails,
-  createExtendedDetails,
+  createOrUpdateExtendedDetails,
   updateUserDetails,
+  getUserDetails,
 };

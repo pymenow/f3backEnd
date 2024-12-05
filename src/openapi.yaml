@@ -30,6 +30,10 @@ paths:
     $ref: "./openapi/scripts/get-emotion-analysis.yaml#/paths/~1scripts~1emotion-analysis"
   /user/profileUpdate:
     $ref: "./openapi/user/profileUpdate.yaml#/paths/~1user~1profileUpdate"
+  /user/profile:
+    $ref: "./openapi/user/getProfile.yaml#/paths/~1user~1profile"
+  /user/extendedInfo:
+    $ref: "./openapi/user/extendedInfo.yaml#/paths/~1user~1extendedInfo"
 
 components:
   securitySchemes:

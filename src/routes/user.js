@@ -2,21 +2,16 @@ const express = require("express");
 const { authenticate } = require("../middleware/authMiddleware");
 const {
   updateUserDetails,
-  createExtendedDetails,
+  getUserDetails,
+  createOrUpdateExtendedDetails,
 } = require("../firebase/fireStore");
 
 const router = express.Router();
 
 // Profile Update Route
 router.put("/profileUpdate", authenticate, async (req, res) => {
-  const {
-    firstName,
-    lastName,
-    phoneNumber,
-    displayName,
-    profilePic,
-    banner,
-  } = req.body;
+  const { firstName, lastName, phoneNumber, displayName, profilePic, banner } =
+    req.body;
 
   if (!req.user || !req.user.uid) {
     return res.status(400).json({ error: "User authentication failed." });
@@ -61,20 +56,42 @@ router.put("/profileUpdate", authenticate, async (req, res) => {
 });
 
 // Retrieve User Details
-router.get("/details", authenticate, async (req, res) => {
-  const userId = req.user.uid;
+router.get("/profile", authenticate, async (req, res) => {
+  const userId = req.user.uid; // Get the authenticated user's ID from the token
 
   try {
-    const userDoc = await db.collection("users").doc(userId).get();
+    const userDetails = await getUserDetails(userId); // Call the helper function
 
-    if (!userDoc.exists) {
+    if (!userDetails) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    res.status(200).json({ message: "User details retrieved successfully.", data: userDoc.data() });
+    res.status(200).json({
+      message: "User details retrieved successfully.",
+      data: userDetails,
+    });
   } catch (error) {
     console.error("Error retrieving user details:", error.message);
     res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+//Extended Profile updates
+router.put("/extendedInfo", authenticate, async (req, res) => {
+  const userId = req.user.uid; // Get authenticated user's ID from token
+  const { address, preferences, genre, expertise } = req.body;
+
+  try {
+    await createOrUpdateExtendedDetails(userId, {
+      address,
+      preferences,
+      genre,
+      expertise,
+    });
+    res.status(200).json({ message: "Extended details updated successfully." });
+  } catch (error) {
+    console.error("Error updating extended details:", error.message);
+    res.status(500).json({ error: error.message });
   }
 });
 
