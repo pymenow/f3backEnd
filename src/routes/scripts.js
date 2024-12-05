@@ -1,13 +1,15 @@
 const express = require("express");
 const { getFirestore } = require("firebase-admin/firestore");
 const { auth } = require("../firebase/firebaseConfig"); // Firebase Admin SDK
-const {
-  processScriptWithVertexAI
-} = require("../AI/google/vertex");
+const { processScriptWithVertexAI } = require("../AI/google/vertex");
 
 const loadMarkdown = require("../common/loadMarkdown");
-const sentimentInstructions = loadMarkdown("../AI/google/system_instructions/sentiment.md");
-const scriptInfoInstructions = loadMarkdown("../AI/google/system_instructions/scriptInfo.md");
+const sentimentInstructions = loadMarkdown(
+  "../AI/google/system_instructions/sentiment.md"
+);
+const scriptInfoInstructions = loadMarkdown(
+  "../AI/google/system_instructions/scriptInfo.md"
+);
 const axios = require("axios");
 const { authenticate } = require("../middleware/authMiddleware");
 const router = express.Router();
@@ -108,22 +110,17 @@ router.post("/presampling", authenticate, async (req, res) => {
   }
 });
 
-router.post(
-  "/emotion-analysis",
-  authenticate,
-  handleVertexAnalysis(sentimentInstructions, "emotionAnalysis")
-);
+router.post("/emotion-analysis", authenticate, (req, res) => {
+  const isStream = req.query.stream;
+  handleVertexAnalysis(sentimentInstructions, "emotionAnalysis", {
+    stream: isStream,
+  })(req, res);
+});
 
 router.post(
   "/info",
   authenticate,
   handleVertexAnalysis(scriptInfoInstructions, "scriptInfo")
-);
-
-router.post(
-  "/emotion-analysis-stream",
-  authenticate,
-  handleVertexAnalysis(sentimentInstructions, "emotionAnalysis", { stream: true })
 );
 
 router.get("/get-emotion-analysis", authenticate, async (req, res) => {

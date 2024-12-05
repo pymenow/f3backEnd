@@ -28,8 +28,6 @@ paths:
     $ref: "./openapi/scripts/emotion-analysis.yaml#/paths/~1scripts~1emotion-analysis"
   /scripts/get-emotion-analysis:
     $ref: "./openapi/scripts/get-emotion-analysis.yaml#/paths/~1scripts~1emotion-analysis"
-  /scripts/emotion-analysis-stream:
-    $ref: "./openapi/scripts/emotion-analysis-stream.yaml#/paths/~1scripts~1emotion-analysis-stream"
 components:
   securitySchemes:
     BearerAuth:

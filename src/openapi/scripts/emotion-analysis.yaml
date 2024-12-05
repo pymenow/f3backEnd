@@ -6,6 +6,14 @@ paths:
         - ScriptAI
       security:
         - BearerAuth: []
+      parameters:
+        - in: query
+          name: stream
+          schema:
+            type: boolean
+          description: |
+            Set to `true` to enable streaming mode. When enabled, the response will be a stream of JSON lines (`application/x-ndjson`).
+          required: false
       requestBody:
         required: true
         content:
@@ -19,11 +27,11 @@ paths:
                 userID:
                   type: string
                   description: The ID of the authenticated user
-                  example: "user123"
+                  example: "JirLVB69ssMkGLUucFnLyslUXhh1"
                 scriptID:
                   type: string
                   description: The unique ID of the script to process
-                  example: "script456"
+                  example: "SXI3IvmP1MmLmcmq72hm"
       responses:
         "200":
           description: Script processed successfully
