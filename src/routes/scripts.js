@@ -13,6 +13,9 @@ const scriptInfoInstructions = loadMarkdown(
 const brandAnalysisInstructions = loadMarkdown(
   "../AI/google/system_instructions/brandAnalysis.md"
 );
+const scriptSummaryInstructions = loadMarkdown(
+  "../AI/google/system_instructions/scriptSummary.md"
+);
 const axios = require("axios");
 const { authenticate } = require("../middleware/authMiddleware");
 const router = express.Router();
@@ -132,6 +135,14 @@ router.post("/brand-analysis", authenticate, (req, res) => {
     stream: isStream,
   })(req, res);
 });
+
+router.post("/script-summary", authenticate, (req, res) => {
+  const isStream = req.query.stream;
+  handleVertexAnalysis(scriptSummaryInstructions, "scriptSummary", {
+    stream: isStream,
+  })(req, res);
+});
+
 
 router.get("/get-emotion-analysis", authenticate, async (req, res) => {
   try {

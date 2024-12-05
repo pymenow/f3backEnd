@@ -28,6 +28,8 @@ paths:
     $ref: "./openapi/scripts/emotion-analysis.yaml#/paths/~1scripts~1emotion-analysis"
   /scripts/brand-analysis:
     $ref: "./openapi/scripts/brand-analysis.yaml#/paths/~1scripts~1brand-analysis"
+  /scripts/script-summary:
+    $ref: "./openapi/scripts/script-summary.yaml#/paths/~1scripts~1script-summary"
   /scripts/get-emotion-analysis:
     $ref: "./openapi/scripts/get-emotion-analysis.yaml#/paths/~1scripts~1emotion-analysis"
   /user/profileUpdate:
