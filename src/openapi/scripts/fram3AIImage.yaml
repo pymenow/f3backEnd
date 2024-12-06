@@ -36,9 +36,9 @@ paths:
                   default: "images"
                 apiPath:
                   type: string
-                  description: The API path for the Flux API (e.g., "flux-dev", "flux-pro").
-                  example: "flux-pro"
-                  default: "flux-dev"
+                  description: The API path for the Flux API (e.g., "fram3-dev", "fram3-pro").
+                  example: "fram3-pro"
+                  default: "fram3-dev"
                 width:
                   type: integer
                   description: The width of the generated image in pixels.
