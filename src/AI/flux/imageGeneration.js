@@ -7,6 +7,13 @@ const { v4: uuidv4 } = require("uuid");
 const BASE_API_URL = "https://api.bfl.ml/v1"; // Base API URL
 const DEFAULT_API_PATH = "flux-dev"; // Default API path
 
+const API_PATH_MAP = {
+    "fram3-ultra": "flux-pro-1.1-ultra",
+    "fram3-pro": "flux-pro-1.1",
+    "fram3-legacy": "flux-pro",
+    "fram3-legacy-dev": "flux-dev",
+  };
+
 /**
  * Generates an image using the Flux API and saves it to GCS.
  * @param {string} uid - The user ID.
@@ -29,10 +36,11 @@ const generateAndSaveImage = async (
     options = {}
   ) => {
     const { apiPath = DEFAULT_API_PATH, width = 1024, height = 1024 } = options;
-  
+     // Resolve the incoming API path to a valid one using the mapping
+    const resolvedApiPath = API_PATH_MAP[apiPath] || apiPath; // Fallback to incoming value if no mapping exists
     try {
       // Construct the API endpoint
-      const apiUrl = `${BASE_API_URL}/${apiPath}`;
+      const apiUrl = `${BASE_API_URL}/${resolvedApiPath}`;
   
       // Step 1: Send POST request to Flux API
       const payload = {

@@ -36,9 +36,14 @@ paths:
                   default: "images"
                 apiPath:
                   type: string
-                  description: The API path for the Flux API (e.g., "fram3-dev", "fram3-pro").
+                  description: The API path for the Fram3 AI Imagen API.
+                  enum:
+                    - fram3-ultra
+                    - fram3-pro
+                    - fram3-legacy
+                    - fram3-legacy-dev
                   example: "fram3-pro"
-                  default: "fram3-dev"
+                  default: "fram3-legacy-dev"
                 width:
                   type: integer
                   description: The width of the generated image in pixels.
