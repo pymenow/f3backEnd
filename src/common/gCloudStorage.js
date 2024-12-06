@@ -7,6 +7,69 @@ const axios = require('axios');
 const storage = new Storage();
 const BUCKET_NAME = "fram3"; // Your bucket name
 
+
+/**
+ * Save an artifact from a URL to Google Cloud Storage and return its signed URL.
+ * @param {string} uid - The user ID.
+ * @param {string} scriptId - The script ID.
+ * @param {string} versionId - The version ID of the script.
+ * @param {string} artifactType - The type of artifact (e.g., images, pdfs).
+ * @param {string} fileUrl - The URL of the file to be uploaded.
+ * @returns {string} - The signed URL for accessing the uploaded artifact.
+ */
+const saveArtifactAndGenerateUrl = async (uid, scriptId, versionId, artifactType, fileUrl) => {
+  try {
+    // Extract the file name from the URL
+    const fileName = path.basename(new URL(fileUrl).pathname);
+    const destinationPath = `${uid}/${scriptId}/${versionId}/${artifactType}/${fileName}`;
+
+    console.log(`Downloading file from URL: ${fileUrl}`);
+
+    // Fetch the file as a stream
+    const response = await axios({
+      url: fileUrl,
+      method: 'GET',
+      responseType: 'stream',
+    });
+
+    console.log(`Uploading file to GCS at: ${destinationPath}`);
+
+    // Create a writable stream to Google Cloud Storage
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(destinationPath);
+    const stream = file.createWriteStream();
+
+    // Pipe the file stream to GCS
+    await new Promise((resolve, reject) => {
+      response.data
+        .pipe(stream)
+        .on('finish', resolve)
+        .on('error', (err) => {
+          console.error('Error uploading to GCS:', err.message);
+          reject(err);
+        });
+    });
+
+    console.log(`File uploaded successfully to ${destinationPath}`);
+
+    // Calculate expiration time for the signed URL
+    const expirationDate = new Date();
+    expirationDate.setMinutes(expirationDate.getMinutes() + 10); // Set expiration time to 10 minutes in the future
+
+    // Generate signed URL
+    const [url] = await file.getSignedUrl({
+      action: 'read',
+      expires: expirationDate.toISOString(), // Use ISO 8601 format
+    });
+
+    console.log(`Generated Signed URL: ${url}`);
+    return url; // Return the signed URL
+  } catch (error) {
+    console.error('Error saving artifact and generating signed URL:', error.message);
+    throw new Error(`Failed to save artifact and generate signed URL: ${error.message}`);
+  }
+};
+
 /**
  * Save an artifact to Google Cloud Storage.
  * @param {string} uid - The user ID.
@@ -133,5 +196,6 @@ const uploadFileFromUrl = async (url, destinationPath) => {
       console.error('Error uploading file from URL:', error.message);
       throw new Error(`Failed to upload file from URL: ${error.message}`);
     }
-  };
-module.exports = { saveArtifact, getSignedUrl, deleteArtifact, uploadFileFromUrl };
+  }
+
+module.exports = { saveArtifact, getSignedUrl, deleteArtifact, uploadFileFromUrl, saveArtifactAndGenerateUrl}

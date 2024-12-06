@@ -1,0 +1,106 @@
+paths:
+  /scripts/fram3AIImage:
+    post:
+      summary: Generate an image using the FRAM3 AI API and save it to Google Cloud Storage
+      tags:
+        - Image
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - scriptId
+                - versionId
+                - prompt
+              properties:
+                scriptId:
+                  type: string
+                  description: The unique ID of the script associated with the image.
+                  example: "script123"
+                versionId:
+                  type: string
+                  description: The version ID of the script associated with the image.
+                  example: "v1"
+                prompt:
+                  type: string
+                  description: The text prompt to generate the image.
+                  example: "A futuristic cityscape with flying cars."
+                artifactType:
+                  type: string
+                  description: The type of artifact to store (e.g., "images").
+                  example: "images"
+                  default: "images"
+                apiPath:
+                  type: string
+                  description: The API path for the Flux API (e.g., "flux-dev", "flux-pro").
+                  example: "flux-pro"
+                  default: "flux-dev"
+                width:
+                  type: integer
+                  description: The width of the generated image in pixels.
+                  example: 1280
+                  default: 1024
+                height:
+                  type: integer
+                  description: The height of the generated image in pixels.
+                  example: 720
+                  default: 1024
+      responses:
+        "200":
+          description: Image generated and saved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Image generated and saved successfully!"
+                  signedUrl:
+                    type: string
+                    description: The signed URL of the generated image.
+                    example: "https://storage.googleapis.com/bucket-name/user-id/script123/v1/images/unique-image-name.jpg"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required fields: scriptId, versionId, and prompt are mandatory."
+        "401":
+          description: Unauthorized - No or invalid token provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No token provided."
+        "403":
+          description: Forbidden - User is not authorized to access this script
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized request. User does not own the script."
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."

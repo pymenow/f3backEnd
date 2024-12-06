@@ -2,6 +2,7 @@ const express = require("express");
 const { getFirestore } = require("firebase-admin/firestore");
 const { auth } = require("../firebase/firebaseConfig"); // Firebase Admin SDK
 const { addScript, addAnalysis } = require("../firebase/scriptStore");
+const { generateAndSaveImage } = require("../AI/flux/imageGeneration");
 
 const loadMarkdown = require("../common/loadMarkdown");
 const sentimentInstructions = loadMarkdown(
@@ -152,6 +153,40 @@ router.post("/story-plot", authenticate, (req, res) => {
   handleVertexAnalysis(storyPlotInstructions, "storyPlot", {
     stream: isStream,
   })(req, res);
+});
+
+/**
+ * POST /fram3AIImage
+ * Generate an image using the Flux API and save it to Google Cloud Storage.
+ */
+router.post("/fram3AIImage", authenticate, async (req, res) => {
+  const { scriptId, versionId, prompt, artifactType, apiPath, width, height } = req.body;
+
+  // Validate input
+  if (!scriptId || !versionId || !prompt) {
+    return res.status(400).json({
+      error: "Missing required fields: scriptId, versionId, and prompt are mandatory.",
+    });
+  }
+
+  try {
+    const uid = req.user.uid; // Authenticated user ID
+
+    // Generate and save the image
+    const signedUrl = await generateAndSaveImage(uid, scriptId, versionId, prompt, artifactType, {
+      apiPath,
+      width,
+      height,
+    });
+
+    res.status(200).json({
+      message: "Image generated and saved successfully!",
+      signedUrl,
+    });
+  } catch (error) {
+    console.error("Error generating and saving image:", error.message);
+    res.status(500).json({ error: `Failed to generate and save image: ${error.message}` });
+  }
 });
 
 
