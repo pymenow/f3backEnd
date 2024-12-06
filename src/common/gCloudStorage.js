@@ -1,8 +1,9 @@
 const { Storage } = require("@google-cloud/storage");
 const path = require("path");
 const axios = require("axios");
-const { v4: uuidv4 } = require('uuid');
-
+const { v4: uuidv4 } = require("uuid");
+const sharp = require("sharp");
+const watermarkPath = path.join(__dirname, "../common/wm.png");
 
 // Initialize Google Cloud Storage
 // Application Default Credentials will be used (no key file required)
@@ -45,6 +46,11 @@ const saveArtifactAndGenerateUrl = async (
 
     console.log(`Uploading file to GCS at: ${destinationPath}`);
 
+    // Transform the stream with Sharp to add watermark
+    const transformer = sharp().composite([
+      { input: watermarkPath, gravity: "southeast" },
+    ]); // Overlay the watermark
+
     // Create a writable stream to Google Cloud Storage
     const bucket = storage.bucket(BUCKET_NAME);
     const file = bucket.file(destinationPath);
@@ -53,6 +59,7 @@ const saveArtifactAndGenerateUrl = async (
     // Pipe the file stream to GCS
     await new Promise((resolve, reject) => {
       response.data
+        .pipe(transformer)
         .pipe(stream)
         .on("finish", resolve)
         .on("error", (err) => {
