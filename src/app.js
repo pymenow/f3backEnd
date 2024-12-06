@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth');
 const secureRoutes = require('./routes/secure');
 const scriptRoutes = require('./routes/scripts');
 const userRoutes = require('./routes/user');
+const artifactRoutes = require('./routes/artifacts');
 
 const app = express();
 app.use(bodyParser.json());
@@ -38,6 +39,7 @@ app.use(cors());
     app.use('/secure', secureRoutes);
     app.use('/scripts', scriptRoutes);
     app.use('/user', userRoutes);
+    app.use('/artifacts', artifactRoutes);
 
     // Error Handling Middleware
     app.use((err, req, res, next) => {

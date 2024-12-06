@@ -1,0 +1,137 @@
+const { Storage } = require("@google-cloud/storage");
+const path = require("path");
+const axios = require('axios');
+
+// Initialize Google Cloud Storage
+// Application Default Credentials will be used (no key file required)
+const storage = new Storage();
+const BUCKET_NAME = "fram3"; // Your bucket name
+
+/**
+ * Save an artifact to Google Cloud Storage.
+ * @param {string} uid - The user ID.
+ * @param {string} scriptId - The script ID.
+ * @param {string} versionId - The version ID of the script.
+ * @param {string} artifactType - The type of artifact (e.g., images, pdfs).
+ * @param {string} localFilePath - The local path to the file to be uploaded.
+ * @returns {string} - The GCS path of the uploaded artifact.
+ */
+const saveArtifact = async (uid, scriptId, versionId, artifactType, localFilePath) => {
+  try {
+    const fileName = path.basename(localFilePath);
+    const destinationPath = `${uid}/${scriptId}/${versionId}/${artifactType}/${fileName}`;
+
+    const [file] = await storage.bucket(BUCKET_NAME).upload(localFilePath, {
+      destination: destinationPath,
+      public: false, // Default to private files
+    });
+
+    console.log(`File uploaded to ${destinationPath}`);
+    return `gs://${BUCKET_NAME}/${destinationPath}`; // Return the GCS path
+  } catch (error) {
+    console.error("Error saving artifact:", error.message);
+    throw new Error(`Failed to save artifact: ${error.message}`);
+  }
+};
+
+/**
+ * Generate a signed URL for accessing an artifact.
+ * @param {string} uid - The user ID.
+ * @param {string} scriptId - The script ID.
+ * @param {string} versionId - The version ID of the script.
+ * @param {string} artifactType - The type of artifact (e.g., images, pdfs).
+ * @param {string} fileName - The name of the file.
+ * @returns {string} - The signed URL for accessing the artifact.
+ */
+const getSignedUrl = async (uid, scriptId, versionId, artifactType, fileName) => {
+    const filePath = `${uid}/${scriptId}/${versionId}/${artifactType}/${fileName}`;
+  
+    try {
+      // Check if the file exists
+      const [exists] = await storage.bucket(BUCKET_NAME).file(filePath).exists();
+      if (!exists) {
+        throw new Error(`File not found: gs://${BUCKET_NAME}/${filePath}`);
+      }
+  
+      // Calculate expiration time using Date object
+      const expirationDate = new Date();
+      expirationDate.setMinutes(expirationDate.getMinutes() + 10); // Set expiration time to 10 minutes in the future
+  
+      // Generate signed URL
+      const [url] = await storage.bucket(BUCKET_NAME).file(filePath).getSignedUrl({
+        action: 'read',
+        expires: expirationDate.toISOString(), // Use ISO 8601 format
+      });
+
+      return url;
+    } catch (error) {
+      console.error('Error generating signed URL:', error.message);
+      throw new Error(`Failed to retrieve artifact: ${error.message}`);
+    }
+  };
+    
+
+/**
+ * Delete an artifact from Google Cloud Storage.
+ * @param {string} uid - The user ID.
+ * @param {string} scriptId - The script ID.
+ * @param {string} versionId - The version ID of the script.
+ * @param {string} artifactType - The type of artifact (e.g., images, pdfs).
+ * @param {string} fileName - The name of the file.
+ * @returns {boolean} - Returns true if the file was successfully deleted.
+ */
+const deleteArtifact = async (uid, scriptId, versionId, artifactType, fileName) => {
+  const filePath = `${uid}/${scriptId}/${versionId}/${artifactType}/${fileName}`;
+  try {
+    await storage.bucket(BUCKET_NAME).file(filePath).delete();
+    console.log(`File ${filePath} deleted successfully.`);
+    return true;
+  } catch (error) {
+    console.error("Error deleting artifact:", error.message);
+    throw new Error(`Failed to delete artifact: ${error.message}`);
+  }
+};
+
+/**
+ * Uploads a file from a URL to Google Cloud Storage.
+ * @param {string} url - The URL of the file to upload.
+ * @param {string} destinationPath - The destination path in the bucket.
+ * @returns {string} - The public URL or GCS path of the uploaded file.
+ */
+const uploadFileFromUrl = async (url, destinationPath) => {
+    try {
+      console.log(`Downloading file from URL: ${url}`);
+  
+      // Fetch the file as a stream
+      const response = await axios({
+        url,
+        method: 'GET',
+        responseType: 'stream',
+      });
+  
+      console.log(`Uploading file to GCS at: ${destinationPath}`);
+  
+      // Create a writable stream to Google Cloud Storage
+      const bucket = storage.bucket(BUCKET_NAME);
+      const file = bucket.file(destinationPath);
+      const stream = file.createWriteStream();
+  
+      // Pipe the file stream to GCS
+      await new Promise((resolve, reject) => {
+        response.data
+          .pipe(stream)
+          .on('finish', resolve)
+          .on('error', (err) => {
+            console.error('Error uploading to GCS:', err.message);
+            reject(err);
+          });
+      });
+  
+      console.log('File uploaded successfully!');
+      return `gs://${BUCKET_NAME}/${destinationPath}`;
+    } catch (error) {
+      console.error('Error uploading file from URL:', error.message);
+      throw new Error(`Failed to upload file from URL: ${error.message}`);
+    }
+  };
+module.exports = { saveArtifact, getSignedUrl, deleteArtifact, uploadFileFromUrl };

@@ -1,0 +1,57 @@
+paths:
+  /artifacts/retrieve:
+    get:
+      summary: Retrieve an artifact's signed URL
+      tags:
+        - Artifacts Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: scriptId
+          required: true
+          schema:
+            type: string
+          description: ID of the script to which the artifact belongs
+          example: "2uwbKngFuSj2q733FNJ2"
+        - in: query
+          name: versionId
+          required: true
+          schema:
+            type: string
+          description: ID of the version of the script
+          example: "Qxnog9Cd9YeththPKP5B"
+        - in: query
+          name: artifactType
+          required: true
+          schema:
+            type: string
+            enum: ["images", "pdfs", "outputs", "logs"]
+          description: Type of artifact (e.g., images, pdfs, outputs, logs)
+          example: "images"
+        - in: query
+          name: fileName
+          required: true
+          schema:
+            type: string
+          description: Name of the file to retrieve
+          example: "example.png"
+      responses:
+        "200":
+          description: Artifact retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Artifact retrieved successfully!"
+                  signedUrl:
+                    type: string
+                    description: Signed URL for accessing the artifact
+                    example: "https://storage.googleapis.com/fram3/user123/script123/v1/images/example.png?X-Goog-SignedHeaders=..."
+        "400":
+          description: Invalid request or missing fields
+        "500":
+          description: Internal server error

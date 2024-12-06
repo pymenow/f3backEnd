@@ -1,0 +1,51 @@
+paths:
+  /artifacts/upload:
+    post:
+      summary: Upload an artifact to Google Cloud Storage
+      tags:
+        - Artifacts Management
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                scriptId:
+                  type: string
+                  description: ID of the script to which the artifact belongs
+                  example: "2uwbKngFuSj2q733FNJ2"
+                versionId:
+                  type: string
+                  description: ID of the version of the script
+                  example: "Qxnog9Cd9YeththPKP5B"
+                artifactType:
+                  type: string
+                  description: Type of artifact (e.g., images, pdfs, outputs, logs)
+                  example: "images"
+                  enum: ["images", "pdfs", "outputs", "logs"]
+                file:
+                  type: string
+                  format: binary
+                  description: The file to be uploaded
+      responses:
+        "200":
+          description: Artifact uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Artifact uploaded successfully!"
+                  artifactPath:
+                    type: string
+                    description: Path of the uploaded artifact in Google Cloud Storage
+                    example: "gs://fram3/user123/script123/v1/images/example.png"
+        "400":
+          description: Invalid request or missing fields
+        "500":
+          description: Internal server error

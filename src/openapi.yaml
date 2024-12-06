@@ -40,6 +40,12 @@ paths:
     $ref: "./openapi/user/getProfile.yaml#/paths/~1user~1profile"
   /user/extendedInfo:
     $ref: "./openapi/user/extendedInfo.yaml#/paths/~1user~1extendedInfo"
+  /artifacts/upload:
+    $ref: "./openapi/artifacts/upload.yaml#/paths/~1artifacts~1upload"
+  /artifacts/retrieve:
+    $ref: "./openapi/artifacts/retrieve.yaml#/paths/~1artifacts~1retrieve"
+  /artifacts/delete:
+    $ref: "./openapi/artifacts/delete.yaml#/paths/~1artifacts~1delete"
 
 components:
   securitySchemes:

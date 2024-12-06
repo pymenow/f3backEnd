@@ -1,0 +1,47 @@
+paths:
+  /artifacts/delete:
+    delete:
+      summary: Delete an artifact from Google Cloud Storage
+      tags:
+        - Artifacts Management
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scriptId:
+                  type: string
+                  description: ID of the script to which the artifact belongs
+                  example: "2uwbKngFuSj2q733FNJ2"
+                versionId:
+                  type: string
+                  description: ID of the version of the script
+                  example: "Qxnog9Cd9YeththPKP5B"
+                artifactType:
+                  type: string
+                  description: Type of artifact (e.g., images, pdfs, outputs, logs)
+                  example: "images"
+                  enum: ["images", "pdfs", "outputs", "logs"]
+                fileName:
+                  type: string
+                  description: Name of the file to delete
+                  example: "example.png"
+      responses:
+        "200":
+          description: Artifact deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Artifact deleted successfully."
+        "400":
+          description: Invalid request or missing fields
+        "500":
+          description: Internal server error
