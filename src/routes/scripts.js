@@ -30,6 +30,10 @@ const sceneAnalysisInstructions = loadMarkdown(
   "../AI/google/system_instructions/sceneAnalysis.md"
 );
 
+const shotListInstructions = loadMarkdown(
+  "../AI/google/system_instructions/shotList.md"
+);
+
 const axios = require("axios");
 const { authenticate } = require("../middleware/authMiddleware");
 const router = express.Router();
@@ -174,6 +178,13 @@ router.post("/rating", authenticate, (req, res) => {
 router.post("/scene-analysis", authenticate, (req, res) => {
   const isStream = req.query.stream;
   handleVertexAnalysis(sceneAnalysisInstructions, "sceneAnalysis", {
+    stream: isStream,
+  })(req, res);
+});
+
+router.post("/shot-list", authenticate, (req, res) => {
+  const isStream = req.query.stream;
+  handleVertexAnalysis(shotListInstructions, "shotList", {
     stream: isStream,
   })(req, res);
 });

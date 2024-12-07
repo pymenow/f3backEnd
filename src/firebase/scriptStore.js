@@ -13,6 +13,7 @@ const ALLOWED_ANALYSIS_TYPES = [
   "storyPlot",
   "sentimentAnalysis",
   "sceneAnalysis",
+  "shotList",
   "visualPrompts",
   "images",
 ];
