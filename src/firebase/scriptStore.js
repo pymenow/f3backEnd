@@ -213,7 +213,10 @@ const getScript = async (userId, scriptId, versionId = null, includeDetails = fa
 
       const versions = [];
       versionsSnapshot.forEach((doc) => {
-        versions.push({ versionId: doc.id, versionNumber: doc.data().versionNumber });
+        versions.push({
+          versionId: doc.id,
+          versionNumber: doc.data().versionNumber,
+        });
       });
 
       const analysesSnapshot = await db
@@ -229,7 +232,13 @@ const getScript = async (userId, scriptId, versionId = null, includeDetails = fa
       const analyses = [];
       if (!analysesSnapshot.empty) {
         analysesSnapshot.forEach((doc) => {
-          analyses.push({ analysisId: doc.id, ...doc.data() });
+          const analysisData = doc.data();
+          analyses.push({
+            analysisId: doc.id,
+            analysisType: analysisData.analysisType,
+            status: analysisData.status,
+            timestamp: analysisData.timestamp,
+          });
         });
       }
 
@@ -243,6 +252,7 @@ const getScript = async (userId, scriptId, versionId = null, includeDetails = fa
     throw new Error("Failed to retrieve script. Please try again.");
   }
 };
+
 
 
 /**
