@@ -89,11 +89,11 @@ const generateAndSaveImage = async (
       }
   
       if (!imageUrl) {
-        throw new Error("Failed to retrieve image URL from Flux API.");
+        throw new Error("Failed to retrieve image URL from F3Image API.");
       }
   
       // Step 3: Save the image URL to Google Cloud Storage and get a signed URL
-      const signedUrl = await saveArtifactAndGenerateUrl(uid, scriptId, versionId, artifactType, imageUrl);
+      const signedUrl = await saveArtifactAndGenerateUrl(uid, scriptId, versionId, artifactType, imageUrl, width, height);
   
       console.log(`Signed URL for the image: ${signedUrl}`);
   

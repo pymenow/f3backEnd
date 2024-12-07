@@ -4,6 +4,7 @@ const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 const sharp = require("sharp");
 const watermarkPath = path.join(__dirname, "../common/wm.png");
+const watermarkPath1024 = path.join(__dirname, "../common/wm1024.png");
 
 // Initialize Google Cloud Storage
 // Application Default Credentials will be used (no key file required)
@@ -24,12 +25,16 @@ const saveArtifactAndGenerateUrl = async (
   scriptId,
   versionId,
   artifactType,
-  fileUrl
+  fileUrl,
+  width,
+  height
 ) => {
   try {
     // Extract the file name from the URL
     // Extract the file extension from the URL
     const fileExtension = path.extname(new URL(fileUrl).pathname);
+    const watermark = height === 1024 ? watermarkPath1024 : watermarkPath;
+    
 
     // Generate a unique filename using UUID
     const uniqueFileName = `${uuidv4()}${fileExtension}`;
@@ -48,7 +53,7 @@ const saveArtifactAndGenerateUrl = async (
 
     // Transform the stream with Sharp to add watermark
     const transformer = sharp().composite([
-      { input: watermarkPath, gravity: "southeast" },
+      { input: watermark, gravity: "southeast" },
     ]); // Overlay the watermark
 
     // Create a writable stream to Google Cloud Storage
