@@ -21,6 +21,11 @@ const scriptSummaryInstructions = loadMarkdown(
 const storyPlotInstructions = loadMarkdown(
   "../AI/google/system_instructions/storyPlot.md"
 );
+
+const ratingInstructions = loadMarkdown(
+  "../AI/google/system_instructions/rating.md"
+);
+
 const axios = require("axios");
 const { authenticate } = require("../middleware/authMiddleware");
 const router = express.Router();
@@ -155,6 +160,12 @@ router.post("/story-plot", authenticate, (req, res) => {
   })(req, res);
 });
 
+router.post("/rating", authenticate, (req, res) => {
+  const isStream = req.query.stream;
+  handleVertexAnalysis(ratingInstructions, "rating", {
+    stream: isStream,
+  })(req, res);
+});
 /**
  * POST /fram3AIImage
  * Generate an image using the Flux API and save it to Google Cloud Storage.

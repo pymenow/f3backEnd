@@ -32,6 +32,8 @@ paths:
     $ref: "./openapi/scripts/script-summary.yaml#/paths/~1scripts~1script-summary"
   /scripts/story-plot:
     $ref: "./openapi/scripts/story-plot.yaml#/paths/~1scripts~1story-plot"
+  /scripts/rating:
+    $ref: "./openapi/scripts/rating.yaml#/paths/~1scripts~1rating"
   /scripts/get-emotion-analysis:
     $ref: "./openapi/scripts/get-emotion-analysis.yaml#/paths/~1scripts~1emotion-analysis"
   /scripts/fram3AIImage:

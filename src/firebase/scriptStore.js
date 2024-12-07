@@ -6,6 +6,7 @@ const ALLOWED_ANALYSIS_TYPES = [
   "categories",
   "entities",
   "scriptInfo",
+  "rating",
   "emotionAnalysis",
   "brandAnalysis",
   "scriptSummary",
