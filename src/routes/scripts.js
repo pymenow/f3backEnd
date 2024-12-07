@@ -1,7 +1,7 @@
 const express = require("express");
 const { getFirestore } = require("firebase-admin/firestore");
 const { auth } = require("../firebase/firebaseConfig"); // Firebase Admin SDK
-const { addScript, addAnalysis, getAnalyses } = require("../firebase/scriptStore");
+const { addScript, addAnalysis, getAnalyses, getScript } = require("../firebase/scriptStore");
 const { generateAndSaveImage } = require("../AI/flux/imageGeneration");
 
 const loadMarkdown = require("../common/loadMarkdown");
@@ -264,6 +264,32 @@ router.get("/get-analysis", authenticate, async (req, res) => {
   } catch (error) {
     console.error("Error retrieving analyses:", error.message);
     res.status(500).json({ error: `Failed to retrieve analyses: ${error.message}` });
+  }
+});
+
+router.get("/get-script", authenticate, async (req, res) => {
+  const { scriptId, versionId, includeDetails } = req.query;
+
+  try {
+    // Validate required parameters
+    if (!scriptId) {
+      return res.status(400).json({
+        error: "Missing required query parameter: scriptId.",
+      });
+    }
+
+    const userId = req.user.uid; // Get authenticated user's UID
+
+    // Call getScript function
+    const scriptData = await getScript(userId, scriptId, versionId, includeDetails);
+
+    res.status(200).json({
+      message: "Script retrieved successfully.",
+      script: scriptData,
+    });
+  } catch (error) {
+    console.error("Error retrieving script:", error.message);
+    res.status(500).json({ error: "Internal server error." });
   }
 });
 

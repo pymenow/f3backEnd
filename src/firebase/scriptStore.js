@@ -162,16 +162,8 @@ const addScript = async (
   }
 };
 
-/**
- * Retrieve a script and its specific or current version.
- * @param {string} userId - The ID of the user.
- * @param {string} scriptId - The ID of the script to retrieve.
- * @param {string|null} versionId - The ID of the version to retrieve. If null, fetches the current version.
- * @returns {object} - The script details along with the specified or current version content.
- */
-const getScript = async (userId, scriptId, versionId = null) => {
+const getScript = async (userId, scriptId, versionId = null, includeDetails = false) => {
   try {
-    // Fetch the script document
     const scriptDoc = await db
       .collection("users")
       .doc(userId)
@@ -184,11 +176,8 @@ const getScript = async (userId, scriptId, versionId = null) => {
     }
 
     const scriptData = scriptDoc.data();
-
-    // Determine which version ID to fetch
     const versionToFetch = versionId || scriptData.currentVersion;
 
-    // Fetch the specified version details
     const versionDoc = await db
       .collection("users")
       .doc(userId)
@@ -199,15 +188,12 @@ const getScript = async (userId, scriptId, versionId = null) => {
       .get();
 
     if (!versionDoc.exists) {
-      throw new Error(
-        `Version ${versionToFetch} not found for script ${scriptId}.`
-      );
+      throw new Error(`Version ${versionToFetch} not found for script ${scriptId}.`);
     }
 
     const versionData = versionDoc.data();
 
-    // Combine the script data with the version data
-    return {
+    const result = {
       scriptId,
       ...scriptData,
       version: {
@@ -215,11 +201,49 @@ const getScript = async (userId, scriptId, versionId = null) => {
         ...versionData,
       },
     };
+
+    if (includeDetails) {
+      const versionsSnapshot = await db
+        .collection("users")
+        .doc(userId)
+        .collection("scripts")
+        .doc(scriptId)
+        .collection("versions")
+        .get();
+
+      const versions = [];
+      versionsSnapshot.forEach((doc) => {
+        versions.push({ versionId: doc.id, versionNumber: doc.data().versionNumber });
+      });
+
+      const analysesSnapshot = await db
+        .collection("users")
+        .doc(userId)
+        .collection("scripts")
+        .doc(scriptId)
+        .collection("versions")
+        .doc(versionToFetch)
+        .collection("analyses")
+        .get();
+
+      const analyses = [];
+      if (!analysesSnapshot.empty) {
+        analysesSnapshot.forEach((doc) => {
+          analyses.push({ analysisId: doc.id, ...doc.data() });
+        });
+      }
+
+      result.versions = versions;
+      result.version.analyses = analyses;
+    }
+
+    return result;
   } catch (error) {
     console.error("Error retrieving script:", error.message);
     throw new Error("Failed to retrieve script. Please try again.");
   }
 };
+
 
 /**
  * Fetch analyses for a given user, scriptId, versionId, and optionally analysisType.

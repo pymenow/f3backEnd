@@ -1,0 +1,141 @@
+paths:
+  /scripts/get-script:
+    get:
+      summary: Retrieve a script and its version details.
+      tags:
+        - ScriptAI
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: scriptId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The unique ID of the script to retrieve.
+          example: "2uwbKngFuSj2q733FNJ2"
+        - name: versionId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: The unique ID of the version to retrieve. If not provided, fetches the current version.
+          example: "Qxnog9Cd9YeththPKP5B"
+        - name: includeDetails
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Include all versions and analyses for the script. Defaults to `false`.
+          example: true
+      responses:
+        "200":
+          description: Script retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Script retrieved successfully."
+                  script:
+                    type: object
+                    description: Details of the script and version.
+                    properties:
+                      scriptId:
+                        type: string
+                        description: ID of the script.
+                        example: "2uwbKngFuSj2q733FNJ2"
+                      title:
+                        type: string
+                        description: Title of the script.
+                        example: "My First Script"
+                      currentVersion:
+                        type: string
+                        description: The ID of the current version.
+                        example: "Qxnog9Cd9YeththPKP5B"
+                      version:
+                        type: object
+                        description: Details of the current or specified version.
+                        properties:
+                          versionId:
+                            type: string
+                            description: ID of the version.
+                            example: "Qxnog9Cd9YeththPKP5B"
+                          content:
+                            type: string
+                            description: Content of the version.
+                            example: "The scene opens with a sunset over a quiet beach..."
+                          analyses:
+                            type: array
+                            description: List of analyses for the version.
+                            items:
+                              type: object
+                              properties:
+                                analysisType:
+                                  type: string
+                                  description: Type of analysis.
+                                  example: "emotionAnalysis"
+                                result:
+                                  type: object
+                                  description: Analysis result as JSON.
+                                timestamp:
+                                  type: string
+                                  format: date-time
+                                  description: Timestamp when the analysis was performed.
+                                  example: "2024-12-01T12:30:00.000Z"
+                      versions:
+                        type: array
+                        description: List of all versions if `includeDetails` is `true`.
+                        items:
+                          type: object
+                          properties:
+                            versionId:
+                              type: string
+                              description: ID of the version.
+                              example: "Qxnog9Cd9YeththPKP5B"
+                            versionNumber:
+                              type: integer
+                              description: Version number.
+                              example: 2
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required query parameter: scriptId."
+        "404":
+          description: Script or version not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Script not found."
+        "401":
+          description: Unauthorized - No or invalid token provided.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No token provided."
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."
