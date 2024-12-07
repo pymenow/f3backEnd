@@ -34,6 +34,10 @@ const shotListInstructions = loadMarkdown(
   "../AI/google/system_instructions/shotList.md"
 );
 
+const promptGeneratorInstructions = loadMarkdown(
+  "../AI/google/system_instructions/promptGenerator.md"
+);
+
 const axios = require("axios");
 const { authenticate } = require("../middleware/authMiddleware");
 const router = express.Router();
@@ -185,6 +189,13 @@ router.post("/scene-analysis", authenticate, (req, res) => {
 router.post("/shot-list", authenticate, (req, res) => {
   const isStream = req.query.stream;
   handleVertexAnalysis(shotListInstructions, "shotList", {
+    stream: isStream,
+  })(req, res);
+});
+
+router.post("/prompt-generator", authenticate, (req, res) => {
+  const isStream = req.query.stream;
+  handleVertexAnalysis(promptGeneratorInstructions, "promptGenerator", {
     stream: isStream,
   })(req, res);
 });
