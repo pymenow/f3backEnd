@@ -1,7 +1,7 @@
 const express = require("express");
 const { getFirestore } = require("firebase-admin/firestore");
 const { auth } = require("../firebase/firebaseConfig"); // Firebase Admin SDK
-const { addScript, addAnalysis } = require("../firebase/scriptStore");
+const { addScript, addAnalysis, getAnalyses } = require("../firebase/scriptStore");
 const { generateAndSaveImage } = require("../AI/flux/imageGeneration");
 
 const loadMarkdown = require("../common/loadMarkdown");
@@ -235,33 +235,35 @@ router.post("/fram3AIImage", authenticate, async (req, res) => {
 });
 
 
-router.get("/get-emotion-analysis", authenticate, async (req, res) => {
+router.get("/get-analysis", authenticate, async (req, res) => {
+  const { scriptId, versionId, analysisType } = req.query;
+
   try {
-    const userId = req.user.uid;
-
-    // Query Firestore for scripts created by the authenticated user
-    const snapshot = await db
-      .collection("scripts")
-      .where("userId", "==", userId)
-      .get();
-
-    if (snapshot.empty) {
-      return res
-        .status(404)
-        .json({ message: "No scripts found for the user." });
+    // Validate required parameters
+    if (!scriptId || !versionId) {
+      return res.status(400).json({
+        error: "Missing required query parameters: scriptId and versionId.",
+      });
     }
 
-    const scripts = [];
-    snapshot.forEach((doc) => {
-      scripts.push({ id: doc.id, ...doc.data() });
-    });
+    const userId = req.user.uid; // Get authenticated user's UID
 
-    res
-      .status(200)
-      .json({ message: "Scripts retrieved successfully.", scripts });
+    // Call getAnalyses function
+    const analyses = await getAnalyses(userId, scriptId, versionId, analysisType);
+
+    if (!analyses || analyses.length === 0) {
+      return res.status(404).json({
+        message: "No analyses found for the given parameters.",
+      });
+    }
+
+    res.status(200).json({
+      message: "Analyses retrieved successfully.",
+      analyses,
+    });
   } catch (error) {
-    console.error("Error retrieving scripts:", error);
-    res.status(500).json({ error: "Internal server error." });
+    console.error("Error retrieving analyses:", error.message);
+    res.status(500).json({ error: `Failed to retrieve analyses: ${error.message}` });
   }
 });
 

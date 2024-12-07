@@ -1,0 +1,121 @@
+paths:
+  /scripts/get-analysis:
+    get:
+      summary: Retrieve analyses for a specific script and version.
+      tags:
+        - ScriptAI
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: scriptId
+          schema:
+            type: string
+          required: true
+          description: The unique ID of the script to retrieve analysis for.
+          example: "2uwbKngFuSj2q733FNJ2"
+        - in: query
+          name: versionId
+          schema:
+            type: string
+          required: true
+          description: The unique ID of the script version to retrieve analyses for.
+          example: "Qxnog9Cd9YeththPKP5B"
+        - in: query
+          name: analysisType
+          schema:
+            type: string
+            description: The type of analysis to retrieve. If not provided, all analyses will be retrieved.
+            enum:
+              - moderation
+              - categories
+              - entities
+              - scriptInfo
+              - rating
+              - emotionAnalysis
+              - brandAnalysis
+              - scriptSummary
+              - storyPlot
+              - sentimentAnalysis
+              - sceneAnalysis
+              - shotList
+              - visualPrompts
+              - images
+            example: "emotionAnalysis"
+      responses:
+        "200":
+          description: Analyses retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Analyses retrieved successfully."
+                  analyses:
+                    type: array
+                    description: Array of analyses for the specified script and version
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Document ID in Firestore for the analysis
+                          example: "analysisId123"
+                        analysisType:
+                          type: string
+                          description: The type of analysis performed
+                          example: "emotionAnalysis"
+                        result:
+                          type: object
+                          description: The analysis result as JSON
+                        status:
+                          type: string
+                          description: Status of the analysis (e.g., completed, in-progress)
+                          example: "completed"
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the analysis was performed
+                          example: "2024-12-01T12:00:00.000Z"
+        "404":
+          description: No analyses found for the given parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "No analyses found for the given parameters."
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required query parameters: scriptId and versionId."
+        "401":
+          description: Unauthorized - No or invalid token provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "No token provided."
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."

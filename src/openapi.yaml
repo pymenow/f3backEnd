@@ -40,8 +40,8 @@ paths:
     $ref: "./openapi/scripts/shotList.yaml#/paths/~1scripts~1shot-list"
   /scripts/prompt-generator:
     $ref: "./openapi/scripts/promptGenerator.yaml#/paths/~1scripts~1prompt-generator"
-  /scripts/get-emotion-analysis:
-    $ref: "./openapi/scripts/get-emotion-analysis.yaml#/paths/~1scripts~1emotion-analysis"
+  /scripts/get-analysis:
+    $ref: "./openapi/scripts/get-analysis.yaml#/paths/~1scripts~1get-analysis"
   /scripts/fram3AIImage:
     $ref: "./openapi/scripts/fram3AIImage.yaml#/paths/~1scripts~1fram3AIImage"
   /user/profileUpdate:

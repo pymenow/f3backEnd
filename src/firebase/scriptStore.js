@@ -26,33 +26,38 @@ const ALLOWED_ANALYSIS_TYPES = [
  * @param {string} analysisType - The type of analysis to check.
  * @returns {Promise<boolean>} - Returns true if the analysis exists, otherwise false.
  */
-const checkIfAnalysisExists = async (userId, scriptId, versionId, analysisType) => {
-    try {
-      // Reference to the analyses subcollection
-      const analysesRef = db
-        .collection("users")
-        .doc(userId)
-        .collection("scripts")
-        .doc(scriptId)
-        .collection("versions")
-        .doc(versionId)
-        .collection("analyses");
-  
-      // Query for the specified analysis type
-      const existingAnalysis = await analysesRef
-        .where("analysisType", "==", analysisType)
-        .get();
-  
-      // Return true if the analysis exists, otherwise false
-      return !existingAnalysis.empty;
-    } catch (error) {
-      console.error(
-        `Error checking if analysis exists for analysisType: ${analysisType}, versionId: ${versionId}`,
-        error.message
-      );
-      throw new Error(`Failed to check analysis existence: ${error.message}`);
-    }
-  };
+const checkIfAnalysisExists = async (
+  userId,
+  scriptId,
+  versionId,
+  analysisType
+) => {
+  try {
+    // Reference to the analyses subcollection
+    const analysesRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("scripts")
+      .doc(scriptId)
+      .collection("versions")
+      .doc(versionId)
+      .collection("analyses");
+
+    // Query for the specified analysis type
+    const existingAnalysis = await analysesRef
+      .where("analysisType", "==", analysisType)
+      .get();
+
+    // Return true if the analysis exists, otherwise false
+    return !existingAnalysis.empty;
+  } catch (error) {
+    console.error(
+      `Error checking if analysis exists for analysisType: ${analysisType}, versionId: ${versionId}`,
+      error.message
+    );
+    throw new Error(`Failed to check analysis existence: ${error.message}`);
+  }
+};
 
 const addAnalysis = async (
   userId,
@@ -216,4 +221,77 @@ const getScript = async (userId, scriptId, versionId = null) => {
   }
 };
 
-module.exports = { addScript, addAnalysis, getScript, checkIfAnalysisExists };
+/**
+ * Fetch analyses for a given user, scriptId, versionId, and optionally analysisType.
+ * @param {string} userId - The user ID.
+ * @param {string} scriptId - The script ID.
+ * @param {string} versionId - The version ID.
+ * @param {string} [analysisType=null] - The type of analysis (optional).
+ * @returns {Array} - An array of analysis documents.
+ */
+const getAnalyses = async (
+  userId,
+  scriptId,
+  versionId,
+  analysisType = null
+) => {
+  try {
+    // Validate analysisType if provided
+    if (analysisType && !ALLOWED_ANALYSIS_TYPES.includes(analysisType)) {
+      throw new Error(
+        `Invalid analysisType. Allowed values are: ${ALLOWED_ANALYSIS_TYPES.join(
+          ", "
+        )}`
+      );
+    }
+
+    // Reference to the analyses subcollection
+    let analysesRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("scripts")
+      .doc(scriptId)
+      .collection("versions")
+      .doc(versionId)
+      .collection("analyses");
+
+    // Apply filter for analysisType if provided
+    if (analysisType) {
+      analysesRef = analysesRef.where("analysisType", "==", analysisType);
+    }
+
+    // Fetch analyses
+    const snapshot = await analysesRef.get();
+
+    if (snapshot.empty) {
+      console.log(
+        `No analyses found for userId: ${userId}, scriptId: ${scriptId}, versionId: ${versionId}, analysisType: ${
+          analysisType || "all"
+        }`
+      );
+      return []; // Return an empty array if no analyses found
+    }
+
+    // Map the documents to an array of analyses
+    const analyses = [];
+    snapshot.forEach((doc) => {
+      analyses.push({ id: doc.id, ...doc.data() });
+    });
+
+    console.log(
+      `Fetched ${analyses.length} analyses for userId: ${userId}, scriptId: ${scriptId}, versionId: ${versionId}`
+    );
+    return analyses;
+  } catch (error) {
+    console.error("Error fetching analyses:", error.message);
+    throw new Error(`Failed to retrieve analyses: ${error.message}`);
+  }
+};
+
+module.exports = {
+  addScript,
+  addAnalysis,
+  getScript,
+  checkIfAnalysisExists,
+  getAnalyses,
+};
