@@ -162,6 +162,63 @@ const addScript = async (
   }
 };
 
+const addVersionToScript = async (userId, scriptId, scriptContent = null, fileURL = null) => {
+  try {
+    // Reference to the script document
+    const scriptRef = db.collection("users").doc(userId).collection("scripts").doc(scriptId);
+
+    // Check if the script exists
+    const scriptDoc = await scriptRef.get();
+    if (!scriptDoc.exists) {
+      throw new Error(`Script with ID ${scriptId} not found.`);
+    }
+
+    // Fetch all versions and determine the highest version number
+    const versionsSnapshot = await scriptRef.collection("versions").get();
+    let highestVersionNumber = 0;
+
+    versionsSnapshot.forEach((doc) => {
+      const versionData = doc.data();
+      if (versionData.versionNumber > highestVersionNumber) {
+        highestVersionNumber = versionData.versionNumber;
+      }
+    });
+
+    // Increment the highest version number for the new version
+    const newVersionNumber = highestVersionNumber + 1;
+
+    // Generate a new version ID
+    const versionsRef = scriptRef.collection("versions");
+    const newVersionRef = versionsRef.doc();
+    const newVersionId = newVersionRef.id;
+
+    // Create the new version data
+    const versionData = {
+      content: scriptContent, // Text content of the script (null if fileURL is provided)
+      fileURL: fileURL || null, // URL to a file (null if content is provided)
+      versionNumber: newVersionNumber, // Increment version number
+      createdAt: FieldValue.serverTimestamp(),
+      modifiedBy: userId,
+    };
+    await newVersionRef.set(versionData);
+
+    // Update the script document with the new current version and last modified time
+    await scriptRef.update({
+      currentVersion: newVersionId,
+      currentVersionNumber: newVersionNumber,
+      lastModifiedAt: FieldValue.serverTimestamp(),
+    });
+
+    console.log(
+      `New version added successfully to scriptId: ${scriptId} with versionId: ${newVersionId}`
+    );
+    return { versionId: newVersionId, versionNumber: newVersionNumber };
+  } catch (error) {
+    console.error("Error adding new version to script:", error.message);
+    throw new Error("Failed to add new version to script. Please try again.");
+  }
+};
+
 const getScript = async (userId, scriptId, versionId = null, includeDetails = false) => {
   try {
     const scriptDoc = await db
@@ -328,4 +385,5 @@ module.exports = {
   getScript,
   checkIfAnalysisExists,
   getAnalyses,
+  addVersionToScript
 };

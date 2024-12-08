@@ -1,0 +1,87 @@
+paths:
+  /scripts/add-version:
+    post:
+      summary: Add a new version to an existing script
+      description: Adds a new version to an existing script and optionally performs analyses (moderation, categories, entities) if script content is provided.
+      operationId: addVersionToScript
+      tags:
+        - ScriptAI
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Data for adding a new version to a script
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - scriptId
+              properties:
+                scriptId:
+                  type: string
+                  description: The ID of the script to which the version will be added
+                  example: 2uwbKngFuSj2q733FNJ2
+                scriptContent:
+                  type: string
+                  description: The content of the new version (optional if fileURL is provided)
+                  example: |
+                    Film opens with Sindhu entering a jogging track in a stadium...
+                fileURL:
+                  type: string
+                  description: A URL pointing to the file for the script (optional if scriptContent is provided)
+                  example: https://example.com/scripts/lacto-calamine.pdf
+      responses:
+        "201":
+          description: Successfully added a new version to the script
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: New version added successfully with analyses.
+                  versionId:
+                    type: string
+                    description: The ID of the new version
+                    example: Qxnog9Cd9YeththPKP5B
+                  versionNumber:
+                    type: integer
+                    description: The version number of the new version
+                    example: 2
+                  analysisResults:
+                    type: object
+                    description: Results of analyses performed (if applicable)
+                    properties:
+                      moderation:
+                        type: object
+                        description: Results of moderation analysis
+                        example: { ... }
+                      categories:
+                        type: object
+                        description: Results of category classification
+                        example: { ... }
+                      entities:
+                        type: object
+                        description: Results of entity analysis
+                        example: { ... }
+        "400":
+          description: Invalid input parameters or missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Missing required parameter - scriptId.
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error. Please try again later.

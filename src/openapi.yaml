@@ -22,6 +22,8 @@ paths:
     $ref: "./openapi/auth/refresh-token.yaml#/paths/~1auth~1refreshToken"
   /scripts/presampling:
     $ref: "./openapi/scripts/presampling.yaml#/paths/~1scripts~1presampling"
+  /scripts/add-version:
+    $ref: "./openapi/scripts/add-version.yaml#/paths/~1scripts~1add-version"
   /scripts/info:
     $ref: "./openapi/scripts/info.yaml#/paths/~1scripts~1info"
   /scripts/emotion-analysis:

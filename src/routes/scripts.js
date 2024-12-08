@@ -1,7 +1,13 @@
 const express = require("express");
 const { getFirestore } = require("firebase-admin/firestore");
 const { auth } = require("../firebase/firebaseConfig"); // Firebase Admin SDK
-const { addScript, addAnalysis, getAnalyses, getScript } = require("../firebase/scriptStore");
+const {
+  addScript,
+  addAnalysis,
+  getAnalyses,
+  getScript,
+  addVersionToScript
+} = require("../firebase/scriptStore");
 const { generateAndSaveImage } = require("../AI/flux/imageGeneration");
 
 const loadMarkdown = require("../common/loadMarkdown");
@@ -138,6 +144,118 @@ router.post("/presampling", authenticate, async (req, res) => {
   }
 });
 
+router.post("/add-version", authenticate, async (req, res) => {
+  try {
+    const { scriptId, scriptContent, fileURL } = req.body;
+    const userId = req.user.uid; // Authenticated user's UID
+
+    // Validate required parameters
+    if (!scriptId) {
+      return res.status(400).json({
+        error: "Missing required parameter: scriptId.",
+      });
+    }
+
+    if (!scriptContent && !fileURL) {
+      return res.status(400).json({
+        error: "Either scriptContent or fileURL must be provided.",
+      });
+    }
+
+    if (
+      scriptContent &&
+      (scriptContent.length < 20 || scriptContent.length > 2000)
+    ) {
+      return res.status(400).json({
+        error: "Script length must be between 20 and 2000 characters.",
+      });
+    }
+
+    // Add a new version to the script
+    const { versionId, versionNumber } = await addVersionToScript(
+      userId,
+      scriptId,
+      scriptContent,
+      fileURL
+    );
+
+    if (!scriptContent) {
+      return res.status(201).json({
+        message:
+          "New version added successfully. No analyses performed as scriptContent is empty.",
+        versionId,
+        versionNumber,
+      });
+    }
+
+    // Google Cloud Natural Language API configuration
+    const document = {
+      content: scriptContent,
+      type: "PLAIN_TEXT",
+    };
+
+    const features = {
+      extractSyntax: true,
+      extractEntities: true,
+      extractDocumentSentiment: true,
+      extractEntitySentiment: true,
+    };
+
+    const request = {
+      document,
+      features,
+      encodingType: "UTF8",
+    };
+
+    // Perform analyses
+    const [moderationResult] = await languageClient.moderateText(request);
+    const [classificationResult] = await languageClient.classifyText(request);
+    const [entityResult] = await languageClient.analyzeEntities(request);
+
+    // Add analyses to Firestore
+    await addAnalysis(
+      userId,
+      scriptId,
+      versionId,
+      "moderation",
+      moderationResult
+    );
+    await addAnalysis(
+      userId,
+      scriptId,
+      versionId,
+      "categories",
+      classificationResult
+    );
+    await addAnalysis(userId, scriptId, versionId, "entities", entityResult);
+
+    console.log("Analysis completed and stored for the new version.");
+
+    // Respond with the Version ID, Number, and Analysis Results
+    res.status(201).json({
+      message: "New version added successfully with analyses.",
+      versionId,
+      versionNumber,
+      analysisResults: {
+        moderation: moderationResult,
+        categories: classificationResult,
+        entities: entityResult,
+      },
+    });
+  } catch (error) {
+    console.error(
+      "Error adding new version and performing analyses:",
+      error.message
+    );
+
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: "Internal server error. Please try again later.",
+      });
+    }
+  }
+});
+
 router.post("/emotion-analysis", authenticate, (req, res) => {
   const isStream = req.query.stream;
   handleVertexAnalysis(sentimentInstructions, "emotionAnalysis", {
@@ -205,12 +323,14 @@ router.post("/prompt-generator", authenticate, (req, res) => {
  * Generate an image using the Flux API and save it to Google Cloud Storage.
  */
 router.post("/fram3AIImage", authenticate, async (req, res) => {
-  const { scriptId, versionId, prompt, artifactType, apiPath, width, height } = req.body;
+  const { scriptId, versionId, prompt, artifactType, apiPath, width, height } =
+    req.body;
 
   // Validate input
   if (!scriptId || !versionId || !prompt) {
     return res.status(400).json({
-      error: "Missing required fields: scriptId, versionId, and prompt are mandatory.",
+      error:
+        "Missing required fields: scriptId, versionId, and prompt are mandatory.",
     });
   }
 
@@ -218,11 +338,18 @@ router.post("/fram3AIImage", authenticate, async (req, res) => {
     const uid = req.user.uid; // Authenticated user ID
 
     // Generate and save the image
-    const signedUrl = await generateAndSaveImage(uid, scriptId, versionId, prompt, artifactType, {
-      apiPath,
-      width,
-      height,
-    });
+    const signedUrl = await generateAndSaveImage(
+      uid,
+      scriptId,
+      versionId,
+      prompt,
+      artifactType,
+      {
+        apiPath,
+        width,
+        height,
+      }
+    );
 
     res.status(200).json({
       message: "Image generated and saved successfully!",
@@ -230,10 +357,11 @@ router.post("/fram3AIImage", authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error("Error generating and saving image:", error.message);
-    res.status(500).json({ error: `Failed to generate and save image: ${error.message}` });
+    res
+      .status(500)
+      .json({ error: `Failed to generate and save image: ${error.message}` });
   }
 });
-
 
 router.get("/get-analysis", authenticate, async (req, res) => {
   const { scriptId, versionId, analysisType } = req.query;
@@ -249,7 +377,12 @@ router.get("/get-analysis", authenticate, async (req, res) => {
     const userId = req.user.uid; // Get authenticated user's UID
 
     // Call getAnalyses function
-    const analyses = await getAnalyses(userId, scriptId, versionId, analysisType);
+    const analyses = await getAnalyses(
+      userId,
+      scriptId,
+      versionId,
+      analysisType
+    );
 
     if (!analyses || analyses.length === 0) {
       return res.status(404).json({
@@ -263,7 +396,9 @@ router.get("/get-analysis", authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error("Error retrieving analyses:", error.message);
-    res.status(500).json({ error: `Failed to retrieve analyses: ${error.message}` });
+    res
+      .status(500)
+      .json({ error: `Failed to retrieve analyses: ${error.message}` });
   }
 });
 
@@ -281,7 +416,12 @@ router.get("/get-script", authenticate, async (req, res) => {
     const userId = req.user.uid; // Get authenticated user's UID
 
     // Call getScript function
-    const scriptData = await getScript(userId, scriptId, versionId, includeDetails);
+    const scriptData = await getScript(
+      userId,
+      scriptId,
+      versionId,
+      includeDetails
+    );
 
     res.status(200).json({
       message: "Script retrieved successfully.",
