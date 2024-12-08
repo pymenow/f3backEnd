@@ -26,22 +26,22 @@ paths:
     $ref: "./openapi/scripts/add-version.yaml#/paths/~1scripts~1add-version"
   /scripts/info:
     $ref: "./openapi/scripts/info.yaml#/paths/~1scripts~1info"
-  /scripts/emotion-analysis:
-    $ref: "./openapi/scripts/emotion-analysis.yaml#/paths/~1scripts~1emotion-analysis"
   /scripts/brand-analysis:
     $ref: "./openapi/scripts/brand-analysis.yaml#/paths/~1scripts~1brand-analysis"
   /scripts/script-summary:
     $ref: "./openapi/scripts/script-summary.yaml#/paths/~1scripts~1script-summary"
-  /scripts/story-plot:
-    $ref: "./openapi/scripts/story-plot.yaml#/paths/~1scripts~1story-plot"
   /scripts/rating:
     $ref: "./openapi/scripts/rating.yaml#/paths/~1scripts~1rating"
+  /scripts/emotion-analysis:
+    $ref: "./openapi/scripts/emotion-analysis.yaml#/paths/~1scripts~1emotion-analysis"
   /scripts/scene-analysis:
     $ref: "./openapi/scripts/sceneAnalysis.yaml#/paths/~1scripts~1scene-analysis"
   /scripts/shot-list:
     $ref: "./openapi/scripts/shotList.yaml#/paths/~1scripts~1shot-list"
   /scripts/prompt-generator:
     $ref: "./openapi/scripts/promptGenerator.yaml#/paths/~1scripts~1prompt-generator"
+  /scripts/story-plot:
+    $ref: "./openapi/scripts/story-plot.yaml#/paths/~1scripts~1story-plot"
   /scripts/get-script:
     $ref: "./openapi/scripts/get-script.yaml#/paths/~1scripts~1get-script"
   /scripts/get-analysis:
