@@ -49,6 +49,7 @@ const { authenticate } = require("../middleware/authMiddleware");
 const router = express.Router();
 const { LanguageServiceClient } = require("@google-cloud/language").v2;
 const handleVertexAnalysis = require("../common/vertexAiHandler");
+const { streamFileFromGCS } = require("../common/gCloudStorage");
 
 const db = getFirestore();
 const languageClient = new LanguageServiceClient();
@@ -429,6 +430,24 @@ router.get("/get-script", authenticate, async (req, res) => {
     });
   } catch (error) {
     console.error("Error retrieving script:", error.message);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+router.get("/stream-audio", async (req, res) => {
+  const { filePath } = req.query;
+
+  if (!filePath) {
+    return res.status(400).json({ error: "Missing required parameter: filePath" });
+  }
+
+  try {
+    await streamFileFromGCS(filePath, res);
+  } catch (error) {
+    if (error.message === "File not found") {
+      return res.status(404).json({ error: "File not found" });
+    }
+    console.error("Error streaming audio:", error.message);
     res.status(500).json({ error: "Internal server error." });
   }
 });

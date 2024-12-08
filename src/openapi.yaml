@@ -46,6 +46,8 @@ paths:
     $ref: "./openapi/scripts/get-script.yaml#/paths/~1scripts~1get-script"
   /scripts/get-analysis:
     $ref: "./openapi/scripts/get-analysis.yaml#/paths/~1scripts~1get-analysis"
+  /scripts/stream-audio:
+    $ref: "./openapi/scripts/stream-audio.yaml#/paths/~1scripts~1stream-audio"
   /scripts/fram3AIImage:
     $ref: "./openapi/scripts/fram3AIImage.yaml#/paths/~1scripts~1fram3AIImage"
   /user/profileUpdate:

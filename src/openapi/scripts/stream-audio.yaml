@@ -1,0 +1,53 @@
+paths:
+  /scripts/stream-audio:
+    get:
+      summary: Stream audio from Google Cloud Storage
+      description: Streams an audio file from Google Cloud Storage based on the file path.
+      tags:
+        - ScriptAI
+      parameters:
+        - name: filePath
+          in: query
+          required: true
+          description: The path of the audio file in the Google Cloud Storage bucket.
+          schema:
+            type: string
+            example: "JirLVB69ssMkGLUucFnLyslUXhh1/2uwbKngFuSj2q733FNJ2/Qxnog9Cd9YeththPKP5B/audio/output.mp3"
+      responses:
+        "200":
+          description: Audio stream
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Missing or invalid query parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required parameter: filePath"
+        "404":
+          description: File not found in Google Cloud Storage
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "File not found"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"

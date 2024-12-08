@@ -253,10 +253,49 @@ const uploadFileFromUrl = async (url, destinationPath) => {
   }
 };
 
+/**
+ * Stream a file from Google Cloud Storage.
+ * @param {string} filePath - The path of the file in the GCS bucket.
+ * @param {object} res - The response object to stream the file.
+ * @returns {Promise<void>}
+ */
+const streamFileFromGCS = async (filePath, res) => {
+  try {
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(filePath);
+
+    // Check if the file exists
+    const [exists] = await file.exists();
+    if (!exists) {
+      throw new Error("File not found");
+    }
+
+    // Set response headers for audio streaming
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Content-Disposition", "inline");
+
+    // Stream the file to the response
+    const readStream = file.createReadStream();
+    readStream.pipe(res);
+
+    readStream.on("error", (err) => {
+      console.error("Error streaming file:", err.message);
+      res.status(500).json({ error: "Error streaming file" });
+    });
+
+    readStream.on("end", () => {
+      console.log("File streamed successfully.");
+    });
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   saveArtifact,
   getSignedUrl,
   deleteArtifact,
   uploadFileFromUrl,
   saveArtifactAndGenerateUrl,
+  streamFileFromGCS
 };
