@@ -45,7 +45,7 @@ The **Shot Breakdown Agent** specializes in analyzing TV commercial scripts to g
     - Read the script analysis from scene analysis agent to understand core messages and themes.
     - Identify key story structure and plot points, emotional peaks, and product focus scenes.
 
-#### **Example for Script Analysis agent Analysis**
+#### **Example for Scene Analysis agent Analysis**
 
 ```json
 
