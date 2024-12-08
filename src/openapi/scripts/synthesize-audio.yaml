@@ -1,0 +1,86 @@
+paths:
+  /scripts/synthesize-audio:
+    post:
+      summary: Synthesize speech and save to Google Cloud Storage
+      description: Synthesizes speech from text using Google Text-to-Speech, saves the audio to Google Cloud Storage, and returns the file path.
+      tags:
+        - ScriptAI
+      security:
+        - BearerAuth: []
+      requestBody:
+        description: Text and metadata required for speech synthesis.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+                - scriptId
+                - versionId
+              properties:
+                text:
+                  type: string
+                  description: The text to synthesize into speech.
+                  example: "Hello, this is a test for audio synthesis."
+                scriptId:
+                  type: string
+                  description: The ID of the script associated with this synthesis.
+                  example: "2uwbKngFuSj2q733FNJ2"
+                versionId:
+                  type: string
+                  description: The ID of the script version associated with this synthesis.
+                  example: "Qxnog9Cd9YeththPKP5B"
+                gender:
+                  type: string
+                  description: The gender of the voice for speech synthesis (default is MALE).
+                  enum:
+                    - MALE
+                    - FEMALE
+                    - NEUTRAL
+                  example: "FEMALE"
+      responses:
+        "200":
+          description: Speech synthesized and saved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Audio synthesized and saved successfully."
+                  gcsFilePath:
+                    type: string
+                    description: Path to the audio file in Google Cloud Storage.
+                    example: "JirLVB69ssMkGLUucFnLyslUXhh1/2uwbKngFuSj2q733FNJ2/Qxnog9Cd9YeththPKP5B/audio/21db5786-79b7-45b0-89ca-1ff14c2830ac.mp3"
+        "400":
+          description: Invalid input parameters or missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Missing required body parameters: text, scriptId, and versionId."
+        "401":
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Unauthorized access. Please provide a valid token."
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error."

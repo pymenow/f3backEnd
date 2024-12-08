@@ -49,7 +49,7 @@ const { authenticate } = require("../middleware/authMiddleware");
 const router = express.Router();
 const { LanguageServiceClient } = require("@google-cloud/language").v2;
 const handleVertexAnalysis = require("../common/vertexAiHandler");
-const { streamFileFromGCS } = require("../common/gCloudStorage");
+const { streamFileFromGCS, synthesizeSpeechAndSave } = require("../common/gCloudStorage");
 
 const db = getFirestore();
 const languageClient = new LanguageServiceClient();
@@ -449,6 +449,38 @@ router.get("/stream-audio", async (req, res) => {
     }
     console.error("Error streaming audio:", error.message);
     res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+router.post("/synthesize-audio", authenticate, async (req, res) => {
+  const { text, scriptId, versionId, gender } = req.body;
+
+  try {
+    // Validate required parameters
+    if (!text || !scriptId || !versionId) {
+      return res.status(400).json({
+        error: "Missing required body parameters: text, scriptId, and versionId.",
+      });
+    }
+
+    const userId = req.user.uid; // Get authenticated user's UID
+
+    // Call synthesizeSpeechAndSave function
+    const gcsFilePath = await synthesizeSpeechAndSave(
+      text,
+      userId,
+      scriptId,
+      versionId,
+      gender || "MALE"
+    );
+
+    res.status(200).json({
+      message: "Audio synthesized and saved successfully.",
+      gcsFilePath,
+    });
+  } catch (error) {
+    console.error("Error synthesizing audio:", error.message);
+    res.status(500).json({ error: `Failed to synthesize audio: ${error.message}` });
   }
 });
 

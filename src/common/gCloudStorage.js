@@ -5,11 +5,17 @@ const { v4: uuidv4 } = require("uuid");
 const sharp = require("sharp");
 const watermarkPath = path.join(__dirname, "../common/wm.png");
 const watermarkPath1024 = path.join(__dirname, "../common/wm1024.png");
+const { Translate } = require("@google-cloud/translate").v2;
+const textToSpeech = require("@google-cloud/text-to-speech");
 
 // Initialize Google Cloud Storage
 // Application Default Credentials will be used (no key file required)
 const storage = new Storage();
 const BUCKET_NAME = "fram3"; // Your bucket name
+
+// Initialize clients
+const translateClient = new Translate();
+const textToSpeechClient = new textToSpeech.TextToSpeechClient();
 
 /**
  * Save an artifact from a URL to Google Cloud Storage and return its signed URL.
@@ -34,7 +40,6 @@ const saveArtifactAndGenerateUrl = async (
     // Extract the file extension from the URL
     const fileExtension = path.extname(new URL(fileUrl).pathname);
     const watermark = height === 1024 ? watermarkPath1024 : watermarkPath;
-    
 
     // Generate a unique filename using UUID
     const uniqueFileName = `${uuidv4()}${fileExtension}`;
@@ -291,11 +296,76 @@ const streamFileFromGCS = async (filePath, res) => {
   }
 };
 
+// Function to detect language using Google Cloud Translation API
+const detectLanguage = async (text) => {
+  try {
+    const [detection] = await translateClient.detect(text);
+    if (detection.language) {
+      console.log(`Detected language: ${detection.language}`);
+      return detection.language;
+    }
+    throw new Error("Language detection failed.");
+  } catch (error) {
+    console.error("Error detecting language:", error.message);
+    throw new Error("Language detection failed.");
+  }
+};
+
+const synthesizeSpeechAndSave = async (
+  text,
+  userId,
+  scriptId,
+  versionId,
+  gender = "MALE"
+) => {
+  try {
+    // Detect the language of the input text
+    const languageCode = await detectLanguage(text);
+
+    // Prepare the Text-to-Speech request
+    const request = {
+      input: { text },
+      voice: {
+        languageCode,
+        ssmlGender: gender,
+      },
+      audioConfig: {
+        audioEncoding: "MP3",
+      },
+    };
+
+    // Perform the Text-to-Speech operation
+    const [response] = await textToSpeechClient.synthesizeSpeech(request);
+
+    // Generate a unique file name
+    const uniqueFileName = `${uuidv4()}.mp3`;
+
+    // Construct the file path in GCS
+    const filePath = `${userId}/${scriptId}/${versionId}/audio/${uniqueFileName}`;
+
+    // Reference the storage bucket and file
+    const bucket = storage.bucket(BUCKET_NAME);
+    const file = bucket.file(filePath);
+
+    // Save the synthesized audio to GCS
+    await file.save(response.audioContent, {
+      metadata: { contentType: "audio/mpeg" },
+    });
+
+    console.log(`Audio saved to GCS at: ${filePath}`);
+    return `${filePath}`; // Return the GCS file path
+  } catch (error) {
+    console.error("Error saving synthesized speech:", error.message);
+    throw new Error("Failed to synthesize and save speech.");
+  }
+};
+
 module.exports = {
   saveArtifact,
   getSignedUrl,
   deleteArtifact,
   uploadFileFromUrl,
   saveArtifactAndGenerateUrl,
-  streamFileFromGCS
+  streamFileFromGCS,
+  synthesizeSpeechAndSave,
 };
