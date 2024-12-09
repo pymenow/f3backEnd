@@ -122,85 +122,89 @@ The **Scene Analyser Agent** specializes in breaking down TV commercial scripts 
 - Any additional info must be added to "additionalInfo" key as an array.
 
 ```json
-[
-  {
-    "sceneID": 1,
-    "sceneSummary": "Sindhu arrives at the stadium jogging track, preparing for her daily workout, while her voiceover expresses frustration with time-consuming skincare routines.",
-    "sceneTextContent": "Film opens with Sindhu entering a jogging track in a stadium. It’s early morning and she is ready for her daily training. She drops her training bag by the side of the running track, as her own VO kicks in. Sindhu’s VO: Oily skin problems ke liye mere paas koi time nahi hai… The beat of the music track speeds up as we see Sindhu doing a quick run on the jogging track. Sindhu’s VO: Blackheads nikaalne mein jitna time lagta hai… utne mein mera warm-up ho sakta hai.",
-    "keyPlotPoint": {
-      "exposition": {
-        "setting": "Stadium jogging track in modern-day India, early morning",
-        "characterIntroduction": "Sindhu, a determined athlete.",
-        "incitingIncident": "Sindhu's frustration with time-consuming skincare routines."
-      }
-    },
-    "characters": [
+{
+  "data": {
+    "scenes": [
       {
-        "actorNumber": 1,
-        "name": "Sindhu",
-        "identity": "Celebrity Athlete",
-        "type": "Human",
-        "age": "25-30 years old",
-        "gender": "Female",
-        "bodyType": "Athletic",
-        "faceShape": "Oval",
-        "distinctFeatures": "Not specified",
-        "hairStyle": "Ponytail",
-        "hairColor": "Black",
-        "skinTone": "Wheatish",
-        "clothing": {
-          "upperBody": "Sports Bra, Black",
-          "lowerBody": "Sports Shorts, Black",
-          "footwear": "Running Shoes, Black and White"
-        }
+        "sceneID": 1,
+        "sceneSummary": "Sindhu arrives at the stadium jogging track, preparing for her daily workout, while her voiceover expresses frustration with time-consuming skincare routines.",
+        "sceneTextContent": "Film opens with Sindhu entering a jogging track in a stadium. It’s early morning and she is ready for her daily training. She drops her training bag by the side of the running track, as her own VO kicks in. Sindhu’s VO: Oily skin problems ke liye mere paas koi time nahi hai… The beat of the music track speeds up as we see Sindhu doing a quick run on the jogging track. Sindhu’s VO: Blackheads nikaalne mein jitna time lagta hai… utne mein mera warm-up ho sakta hai.",
+        "keyPlotPoint": {
+          "exposition": {
+            "setting": "Stadium jogging track in modern-day India, early morning",
+            "characterIntroduction": "Sindhu, a determined athlete.",
+            "incitingIncident": "Sindhu's frustration with time-consuming skincare routines."
+          }
+        },
+        "characters": [
+          {
+            "actorNumber": 1,
+            "name": "Sindhu",
+            "identity": "Celebrity Athlete",
+            "type": "Human",
+            "age": "25-30 years old",
+            "gender": "Female",
+            "bodyType": "Athletic",
+            "faceShape": "Oval",
+            "distinctFeatures": "Not specified",
+            "hairStyle": "Ponytail",
+            "hairColor": "Black",
+            "skinTone": "Wheatish",
+            "clothing": {
+              "upperBody": "Sports Bra, Black",
+              "lowerBody": "Sports Shorts, Black",
+              "footwear": "Running Shoes, Black and White"
+            }
+          }
+        ],
+        "locations": [
+          {
+            "timePeriod": "Modern Day",
+            "geographicLocation": "India",
+            "architectureStyle": "Modern Stadium",
+            "settingType": "Sports Complex",
+            "timeOfDay": "Early Morning",
+            "weather": "Sunny",
+            "lighting": "Bright, Natural Light"
+          }
+        ],
+        "dialogues": [
+          {
+            "sceneNumber": 1,
+            "dialogueNumber": 1,
+            "dialogueContent": "Oily skin problems ke liye mere paas koi time nahi hai…",
+            "speaker": "Sindhu (VO)",
+            "gender": "Female",
+            "language": "Hindi",
+            "audio": {
+              "processing": 0,
+              "path": ""
+            }
+          },
+          {
+            "sceneNumber": 1,
+            "dialogueNumber": 2,
+            "dialogueContent": "Blackheads nikaalne mein jitna time lagta hai… utne mein mera warm-up ho sakta hai.",
+            "speaker": "Sindhu (VO)",
+            "gender": "Female",
+            "language": "Hindi",
+            "audio": {
+              "processing": 0,
+              "path": ""
+            }
+          }
+        ],
+        "audioAnalysis": {
+          "music": "Energetic and upbeat, speeds up during Sindhu's run.",
+          "soundEffects": ["Footsteps", "Crowd noise (subtle)"],
+          "voiceOver": "Clear, confident, and slightly frustrated tone.",
+          "ambience": {
+            "stadium": "Morning sounds, light breeze"
+          }
+        },
+        "additionalInfo": []
       }
-    ],
-    "locations": [
-      {
-        "timePeriod": "Modern Day",
-        "geographicLocation": "India",
-        "architectureStyle": "Modern Stadium",
-        "settingType": "Sports Complex",
-        "timeOfDay": "Early Morning",
-        "weather": "Sunny",
-        "lighting": "Bright, Natural Light"
-      }
-    ],
-    "dialogues": [
-      {
-        "sceneNumber": 1,
-        "dialogueNumber": 1,
-        "dialogueContent": "Oily skin problems ke liye mere paas koi time nahi hai…",
-        "speaker": "Sindhu (VO)",
-        "gender": "Female",
-        "language": "Hindi",
-        "audio": {
-          "processing": 0,
-          "path": ""
-        }
-      },
-      {
-        "sceneNumber": 1,
-        "dialogueNumber": 2,
-        "dialogueContent": "Blackheads nikaalne mein jitna time lagta hai… utne mein mera warm-up ho sakta hai.",
-        "speaker": "Sindhu (VO)",
-        "gender": "Female",
-        "language": "Hindi",
-        "audio": {
-          "processing": 0,
-          "path": ""
-        }
-      }
-    ],
-    "audioAnalysis": {
-      "music": "Energetic and upbeat, speeds up during Sindhu's run.",
-      "soundEffects": ["Footsteps", "Crowd noise (subtle)"],
-      "voiceOver": "Clear, confident, and slightly frustrated tone.",
-      "ambience": {
-        "stadium": "Morning sounds, light breeze"
-      }
-    },
-    "additionalInfo": []
+    ]
   }
-]
+}
 ```

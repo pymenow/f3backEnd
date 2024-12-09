@@ -120,7 +120,7 @@ const addAnalysis = async (
     const analysisDoc = analysesRef.doc(); // Auto-generate an ID
     await analysisDoc.set({
       analysisType,
-      result,
+      ...result, // Flatten all keys from result into the document
       status: "completed", // Default status
       timestamp: FieldValue.serverTimestamp(),
     });
@@ -452,18 +452,18 @@ const getAnalysisResult = async (userId, scriptId, versionId, analysisType) => {
       return null;
     }
 
-    // Return the first analysis result
+    // Return only the data field from the first analysis result
     const analysisDoc = snapshot.docs[0];
     const analysisData = analysisDoc.data();
 
-    if (!analysisData.result) {
+    if (!analysisData || !analysisData.data) {
       console.log(
-        `No result found for analysisType: ${analysisType}, versionId: ${versionId}`
+        `No data found for analysisType: ${analysisType}, versionId: ${versionId}`
       );
       return null;
     }
 
-    return analysisData.result;
+    return analysisData.data; // Return only the 'data' field
   } catch (error) {
     console.error(
       `Error fetching analysis result for analysisType: ${analysisType}`,

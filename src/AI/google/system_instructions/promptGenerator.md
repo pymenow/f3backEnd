@@ -136,69 +136,73 @@ VisualStyle: Anime, Photorealistic,3D Cel-Shaded etc, aspect ratio
 ## **Example JSON Output**
 
 - The output must strictly be a json output.
-- Your output should dynamically adjust based on the input script, creating as many scenes and shots as necessary to comprehensively represent the story. Do not limit the number of scenes or shots based on the given examples. Even if the example output has fewer scenes or shots, expand the breakdown to capture the entire script in detail. Ensure every part of the script is represented within a scene.
-- Below is the example json structure to be followed.
 - Any additional info must be added to "additionalInfo" key as an array.
+- Your output should dynamically adjust based on the input script, creating as many scenes and shots as necessary to comprehensively represent the story. Do not limit the number of scenes or shots based on the given examples. Even if the example output has fewer scenes or shots, expand the breakdown to capture the entire script in detail. Ensure every part of the script is represented within a scene. Below is the example json structure to be followed.
+
 
 ```json
 {
-  "scenes": [
-  "sceneID": 1,
-  "sceneDescription": "Early Morning Jog",
-  "shots": [
-    {
-      "shotNumber": 1,
-      "shotDescription": "Sindhu enters the stadium jogging track.",
-      "subject": {
-        "identity": "Celebrity",
-        "type": "Human",
-        "age": "25-30 years old",
-        "gender": "Female",
-        "bodyType": "Athletic",
-        "faceShape": "Oval",
-        "distinctFeatures": "Strong Jawline, High Cheekbones",
-        "hairStyle": "Ponytail",
-        "hairColor": "Black",
-        "skinTone": "Wheatish",
-        "clothing": {
-          "upperBody": "Sports Bra, Black, Moisture-wicking",
-          "lowerBody": "Sports Shorts, Black, Moisture-wicking",
-          "footwear": "Running Shoes, Black and White"
-        },
-        "facialExpression": "Determined",
-        "bodyPosture": "Upright, Athletic Stance",
-        "movement": "Jogging"
-      },
-      "location": {
-        "timePeriod": "Modern Day",
-        "geographicLocation": "India",
-        "architectureStyle": "Modern Stadium",
-        "settingType": "Sports Complex",
-        "timeOfDay": "Early Morning",
-        "weather": "Sunny",
-        "lighting": "Bright, Natural Light"
-      },
-      "camera": {
-        "shotSize": "Wide Shot",
-        "shotType": "Establishing Shot",
-        "cameraAngle": "Eye-Level",
-        "cameraMovement": "Static",
-        "lensType": "Wide Angle",
-        "focalLength": "24mm",
-        "fStop": "f/2.8",
-        "depthOfField": "Moderate",
-        "composition": "Rule of Thirds",
-        "foreground": "Running Track",
-        "midground": "Sindhu",
-        "background": "Stadium Stands"
-      },
-      "visualStyle": {
-        "style": "Photorealistic",
-        "aspectRatio": "16:9"
-      },
-      "prompt": "Sindhu enters the stadium jogging track, Human, 25-30 years old, Female, Athletic, Oval face, Strong Jawline, High Cheekbones, Ponytail, Black hair, Wheatish skin tone, Sports Bra Black Moisture-wicking, Sports Shorts Black Moisture-wicking, Running Shoes Black and White, Determined expression, Upright Athletic Stance, Jogging, Modern Day, India, Modern Stadium, Sports Complex, Early Morning, Sunny, Bright Natural Light, Wide Shot, Establishing Shot, Eye-Level, Static, Wide Angle, 24mm, f/2.8, Moderate depth of field, Rule of Thirds, Running Track in foreground, Sindhu in midground, Stadium Stands in background, Photorealistic, 16:9"
-    }
-  ]
-  ]
+  "data": {
+    "scenes": [
+      {
+        "sceneID": 1,
+        "sceneDescription": "Early Morning Jog",
+        "shots": [
+          {
+            "shotNumber": 1,
+            "shotDescription": "Sindhu enters the stadium jogging track.",
+            "subject": {
+              "identity": "Celebrity",
+              "type": "Human",
+              "age": "25-30 years old",
+              "gender": "Female",
+              "bodyType": "Athletic",
+              "faceShape": "Oval",
+              "distinctFeatures": "Strong Jawline, High Cheekbones",
+              "hairStyle": "Ponytail",
+              "hairColor": "Black",
+              "skinTone": "Wheatish",
+              "clothing": {
+                "upperBody": "Sports Bra, Black, Moisture-wicking",
+                "lowerBody": "Sports Shorts, Black, Moisture-wicking",
+                "footwear": "Running Shoes, Black and White"
+              },
+              "facialExpression": "Determined",
+              "bodyPosture": "Upright, Athletic Stance",
+              "movement": "Jogging"
+            },
+            "location": {
+              "timePeriod": "Modern Day",
+              "geographicLocation": "India",
+              "architectureStyle": "Modern Stadium",
+              "settingType": "Sports Complex",
+              "timeOfDay": "Early Morning",
+              "weather": "Sunny",
+              "lighting": "Bright, Natural Light"
+            },
+            "camera": {
+              "shotSize": "Wide Shot",
+              "shotType": "Establishing Shot",
+              "cameraAngle": "Eye-Level",
+              "cameraMovement": "Static",
+              "lensType": "Wide Angle",
+              "focalLength": "24mm",
+              "fStop": "f/2.8",
+              "depthOfField": "Moderate",
+              "composition": "Rule of Thirds",
+              "foreground": "Running Track",
+              "midground": "Sindhu",
+              "background": "Stadium Stands"
+            },
+            "visualStyle": {
+              "style": "Photorealistic",
+              "aspectRatio": "16:9"
+            },
+            "prompt": "Sindhu enters the stadium jogging track, Human, 25-30 years old, Female, Athletic, Oval face, Strong Jawline, High Cheekbones, Ponytail, Black hair, Wheatish skin tone, Sports Bra Black Moisture-wicking, Sports Shorts Black Moisture-wicking, Running Shoes Black and White, Determined expression, Upright Athletic Stance, Jogging, Modern Day, India, Modern Stadium, Sports Complex, Early Morning, Sunny, Bright Natural Light, Wide Shot, Establishing Shot, Eye-Level, Static, Wide Angle, 24mm, f/2.8, Moderate depth of field, Rule of Thirds, Running Track in foreground, Sindhu in midground, Stadium Stands in background, Photorealistic, 16:9"
+          }
+        ]
+      }
+    ]
+  }
 }
 ```

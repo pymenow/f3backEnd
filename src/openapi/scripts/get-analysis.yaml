@@ -31,16 +31,14 @@ paths:
               - categories
               - entities
               - scriptInfo
-              - rating
-              - emotionAnalysis
               - brandAnalysis
               - scriptSummary
-              - storyPlot
-              - sentimentAnalysis
+              - rating
+              - emotionAnalysis
               - sceneAnalysis
               - shotList
-              - visualPrompts
-              - images
+              - promptGenerator
+              - storyPlot
             example: "emotionAnalysis"
       responses:
         "200":

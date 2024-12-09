@@ -637,36 +637,38 @@ The Script Sentiment Analyser Agent specializes in analyzing TV commercial scrip
 ## **Example Output**
 
 - The output must strictly be a json output.
-- Below is the example json structure to be followed.
 - Any additional info must be added to "additionalInfo" key as an array.
+- Your output should dynamically adjust based on the input script, creating as many scenes as necessary to comprehensively represent the story. Do not limit the number of scenes based on the given examples. Even if the example output has fewer scenes, expand the breakdown to capture the entire script in detail. Expand the breakdown to capture the entire script in detail, ensuring every part of the script is represented within a scene. Below is the example json structure to be followed.
 
 ```json
 {
-  "sceneAnalysis": [
-    {
-      "sceneID": 1,
-      "sceneDescription": "Early Morning Jog",
-      "lines": [
-        {
-          "lineID": 1,
-          "content": "Film opens with Sindhu entering a jogging track in a stadium.",
-          "contentType": "Visual Action",
-          "duration": "3 seconds",
-          "sentiment": "Determined",
-          "valence": 7.4,
-          "arousal": 2.61
-        },
-        {
-          "lineID": 2,
-          "content": "It’s early morning and she is ready for her daily training.",
-          "contentType": "Visual Action",
-          "duration": "2 seconds",
-          "sentiment": "Determined",
-          "valence": 7.4,
-          "arousal": 2.61
-        }
-      ]
-    }
-  ]
+  "data": {
+    "scenes": [
+      {
+        "sceneID": 1,
+        "sceneDescription": "Early Morning Jog",
+        "lines": [
+          {
+            "lineID": 1,
+            "content": "Film opens with Sindhu entering a jogging track in a stadium.",
+            "contentType": "Visual Action",
+            "duration": "3 seconds",
+            "sentiment": "Determined",
+            "valence": 7.4,
+            "arousal": 2.61
+          },
+          {
+            "lineID": 2,
+            "content": "It’s early morning and she is ready for her daily training.",
+            "contentType": "Visual Action",
+            "duration": "2 seconds",
+            "sentiment": "Determined",
+            "valence": 7.4,
+            "arousal": 2.61
+          }
+        ]
+      }
+    ]
+  }
 }
 ```

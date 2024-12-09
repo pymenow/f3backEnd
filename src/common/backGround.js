@@ -27,7 +27,7 @@ const audioProcessing = async (userId, scriptId, versionId) => {
         return;
       }
   
-      const sceneAnalysis = analyses[0].result; // Assuming the first result is the required analysis
+      const sceneAnalysis = analyses[0].data.scenes; // Assuming the first result is the required analysis
       const analysisId = analyses[0].id; // Firestore document ID for the analysis
   
       // Set `audioProcessing` to 0 (in progress)
@@ -54,7 +54,7 @@ const audioProcessing = async (userId, scriptId, versionId) => {
   
         for (let i = 0; i < dialogues.length; i++) {
           const dialogue = dialogues[i];
-          const dialoguePath = `result.${sceneKey}.dialogues.${i}`;
+          const dialoguePath = `data.scenes.${sceneKey}.dialogues.${i}`;
   
           try {
             // Mark as in-progress
