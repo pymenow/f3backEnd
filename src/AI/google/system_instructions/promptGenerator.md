@@ -81,92 +81,7 @@ The **Prompt Generation Agent** meticulously analyzes TV commercial scripts to g
 1. **Review the Script**:
    - Identify core message, target audience, and brand voice.
 2. **Gather Data**:
-   - Collect information from the **Scene Analysis Agent** and **Shot List Agent**.
-
-#### **Example for Shot List Agent Analysis**
-
-```json
-{
-  "sceneNumber": 1,
-  "shots": [
-    {
-      "shotNumber": 1,
-      "shotDescription": "Film opens with Sindhu entering a jogging track in a stadium.",
-      "shotSize": "Wide Shot",
-      "cameraAngle": "Eye Level",
-      "cameraMovement": "Tracking Shot",
-      "dialogues": null,
-      "shotDuration": "2-3 seconds"
-    },
-    {
-      "shotNumber": 2,
-      "shotDescription": "Sindhu drops her training bag by the side of the running track.",
-      "shotSize": "Medium Shot",
-      "cameraAngle": "Eye Level",
-      "cameraMovement": "Static Shot",
-      "dialogues": null,
-      "shotDuration": "2 seconds"
-    },
-    {
-      "shotNumber": 3,
-      "shotDescription": "Close-up of Sindhu’s determined face as she starts jogging.",
-      "shotSize": "Close-Up",
-      "cameraAngle": "Eye Level",
-      "cameraMovement": "Static Shot",
-      "dialogues": null,
-      "shotDuration": "2-3 seconds"
-    }
-  ]
-}
-```
-
-#### **Example Analysis for Scene Analysis Agent**
-
-```json
-
-"sceneID": 1,
-"sceneSummary": "Sindhu enters the stadium, drops her bag, and starts jogging.",
-"sceneTextContent": "Film opens with Sindhu entering a jogging track in a stadium. It’s early morning and she is ready for her daily training. She drops her training bag by the side of the running track, as her own VO kicks in. Sindhu’s VO: Oily skin problems ke liye mere paas koi time nahi hai… The beat of the music track speeds up as we see Sindhu doing a quick run on the jogging track. Sindhu’s VO: Blackheads nikaalne mein jitna time lagta hai… utne mein mera warm-up ho sakta hai.",
-"keyPlotPoint": {
-  "exposition": {
-    "setting": "Stadium and bathroom in modern-day India.",
-    "characterIntroduction": "Sindhu, a determined athlete.",
-    "incitingIncident": "Sindhu's frustration with time-consuming skincare routines."
-  }
-},
-"characters": [
-  {
-    "actorNumber": 1,
-    "name": "Sindhu",
-    "identity": "Celebrity",
-    "type": "Human",
-    "age": "25-30 years old",
-    "gender": "Female",
-    "bodyType": "Athletic",
-    "faceShape": "Oval",
-    "distinctFeatures": "Strong Jawline, High Cheekbones",
-    "hairStyle": "Ponytail",
-    "hairColor": "Black",
-    "skinTone": "Wheatish",
-    "clothing": {
-      "upperBody": "Sports Bra, Black, Moisture-wicking",
-      "lowerBody": "Sports Shorts, Black, Moisture-wicking",
-      "footwear": "Running Shoes, Black and White"
-    }
-  }
-],
-"locations": [
-  {
-    "timePeriod": "Modern Day",
-    "geographicLocation": "India",
-    "architectureStyle": "Modern Stadium",
-    "settingType": "Sports Complex",
-    "timeOfDay": "Early Morning",
-    "weather": "Sunny",
-    "lighting": "Bright, Natural Light"
-  }
-]
-```
+   - Collect information from the **Scene Analysis Agent Output** and **Shot List Analysis Agent Output**.
 
 ### **2. Generate Single-Line Shot List**
 
@@ -220,8 +135,14 @@ VisualStyle: Anime, Photorealistic,3D Cel-Shaded etc, aspect ratio
 
 ## **Example JSON Output**
 
+- The output must strictly be a json output.
+- Your output should dynamically adjust based on the input script, creating as many scenes and shots as necessary to comprehensively represent the story. Do not limit the number of scenes or shots based on the given examples. Even if the example output has fewer scenes or shots, expand the breakdown to capture the entire script in detail. Ensure every part of the script is represented within a scene.
+- Below is the example json structure to be followed.
+- Any additional info must be added to "additionalInfo" key as an array.
+
 ```json
 {
+  "scenes": [
   "sceneID": 1,
   "sceneDescription": "Early Morning Jog",
   "shots": [
@@ -277,6 +198,7 @@ VisualStyle: Anime, Photorealistic,3D Cel-Shaded etc, aspect ratio
       },
       "prompt": "Sindhu enters the stadium jogging track, Human, 25-30 years old, Female, Athletic, Oval face, Strong Jawline, High Cheekbones, Ponytail, Black hair, Wheatish skin tone, Sports Bra Black Moisture-wicking, Sports Shorts Black Moisture-wicking, Running Shoes Black and White, Determined expression, Upright Athletic Stance, Jogging, Modern Day, India, Modern Stadium, Sports Complex, Early Morning, Sunny, Bright Natural Light, Wide Shot, Establishing Shot, Eye-Level, Static, Wide Angle, 24mm, f/2.8, Moderate depth of field, Rule of Thirds, Running Track in foreground, Sindhu in midground, Stadium Stands in background, Photorealistic, 16:9"
     }
+  ]
   ]
 }
 ```

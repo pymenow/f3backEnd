@@ -12,7 +12,7 @@ const analysisDependencies = {
   sentimentAnalysis: ["script"],
   sceneAnalysis: ["scriptSummary", "script"],
   shotList: ["sceneAnalysis", "scriptSummary", "script"],
-  promptGenerator: ["script"],
+  promptGenerator: ["shotList", "sceneAnalysis", "script"],
   storyPlot: ["script"],
 };
 

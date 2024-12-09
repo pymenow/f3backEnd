@@ -19,8 +19,8 @@ const processScriptWithVertexAI = async (
   systemInstructions,
   res = null
 ) => {
-  if (!script || script.length < 20 || script.length > 10000) {
-    throw new Error("Script length must be between 20 and 10000 words.");
+  if (!script || script.length < 20 || script.length > 25000) {
+    throw new Error("Script length must be between 20 and 25000 words.");
   }
 
   try {
