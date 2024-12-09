@@ -6,17 +6,37 @@ const ALLOWED_ANALYSIS_TYPES = [
   "categories",
   "entities",
   "scriptInfo",
-  "rating",
-  "emotionAnalysis",
   "brandAnalysis",
   "scriptSummary",
-  "storyPlot",
-  "sentimentAnalysis",
+  "rating",
+  "emotionAnalysis",
   "sceneAnalysis",
   "shotList",
-  "visualPrompts",
-  "images",
+  "promptGenerator",
+  "storyPlot",
 ];
+
+/**
+ * Extracts dialogues from scene analysis results.
+ * @param {Array|Object} sceneAnalysisResults - Scene analysis result(s).
+ * @returns {Array} - An array of all dialogues extracted from the scenes.
+ */
+const extractDialogues = (sceneAnalysisResults) => {
+  const dialogues = [];
+
+  // Ensure sceneAnalysisResults is an array for consistency
+  const scenes = Array.isArray(sceneAnalysisResults)
+    ? sceneAnalysisResults
+    : Object.values(sceneAnalysisResults);
+
+  scenes.forEach((scene) => {
+    if (scene.dialogues && Array.isArray(scene.dialogues)) {
+      dialogues.push(...scene.dialogues);
+    }
+  });
+
+  return dialogues;
+};
 
 /**
  * Checks if an analysis of the specified type already exists for a script version.
@@ -162,10 +182,19 @@ const addScript = async (
   }
 };
 
-const addVersionToScript = async (userId, scriptId, scriptContent = null, fileURL = null) => {
+const addVersionToScript = async (
+  userId,
+  scriptId,
+  scriptContent = null,
+  fileURL = null
+) => {
   try {
     // Reference to the script document
-    const scriptRef = db.collection("users").doc(userId).collection("scripts").doc(scriptId);
+    const scriptRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("scripts")
+      .doc(scriptId);
 
     // Check if the script exists
     const scriptDoc = await scriptRef.get();
@@ -219,7 +248,12 @@ const addVersionToScript = async (userId, scriptId, scriptContent = null, fileUR
   }
 };
 
-const getScript = async (userId, scriptId, versionId = null, includeDetails = false) => {
+const getScript = async (
+  userId,
+  scriptId,
+  versionId = null,
+  includeDetails = false
+) => {
   try {
     const scriptDoc = await db
       .collection("users")
@@ -245,7 +279,9 @@ const getScript = async (userId, scriptId, versionId = null, includeDetails = fa
       .get();
 
     if (!versionDoc.exists) {
-      throw new Error(`Version ${versionToFetch} not found for script ${scriptId}.`);
+      throw new Error(
+        `Version ${versionToFetch} not found for script ${scriptId}.`
+      );
     }
 
     const versionData = versionDoc.data();
@@ -309,8 +345,6 @@ const getScript = async (userId, scriptId, versionId = null, includeDetails = fa
     throw new Error("Failed to retrieve script. Please try again.");
   }
 };
-
-
 
 /**
  * Fetch analyses for a given user, scriptId, versionId, and optionally analysisType.
@@ -379,11 +413,72 @@ const getAnalyses = async (
   }
 };
 
+/**
+ * Fetch the result of a specific analysis type for a given user, scriptId, and versionId.
+ * @param {string} userId - The user ID.
+ * @param {string} scriptId - The script ID.
+ * @param {string} versionId - The version ID.
+ * @param {string} analysisType - The type of analysis to fetch.
+ * @returns {object|null} - The analysis result object or null if not found.
+ */
+const getAnalysisResult = async (userId, scriptId, versionId, analysisType) => {
+  try {
+    // Validate analysisType
+    if (!ALLOWED_ANALYSIS_TYPES.includes(analysisType)) {
+      throw new Error(
+        `Invalid analysisType. Allowed types are: ${ALLOWED_ANALYSIS_TYPES.join(
+          ", "
+        )}`
+      );
+    }
+
+    // Reference to the specific analysis document
+    const analysisRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("scripts")
+      .doc(scriptId)
+      .collection("versions")
+      .doc(versionId)
+      .collection("analyses")
+      .where("analysisType", "==", analysisType);
+
+    const snapshot = await analysisRef.get();
+
+    if (snapshot.empty) {
+      console.log(
+        `Analysis of type ${analysisType} not found for userId: ${userId}, scriptId: ${scriptId}, versionId: ${versionId}`
+      );
+      return null;
+    }
+
+    // Return the first analysis result
+    const analysisDoc = snapshot.docs[0];
+    const analysisData = analysisDoc.data();
+
+    if (!analysisData.result) {
+      console.log(
+        `No result found for analysisType: ${analysisType}, versionId: ${versionId}`
+      );
+      return null;
+    }
+
+    return analysisData.result;
+  } catch (error) {
+    console.error(
+      `Error fetching analysis result for analysisType: ${analysisType}`,
+      error.message
+    );
+    throw new Error(`Failed to fetch analysis result: ${error.message}`);
+  }
+};
+
 module.exports = {
   addScript,
   addAnalysis,
   getScript,
   checkIfAnalysisExists,
   getAnalyses,
-  addVersionToScript
+  addVersionToScript,
+  getAnalysisResult,
 };

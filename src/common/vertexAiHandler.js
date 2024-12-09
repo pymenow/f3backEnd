@@ -1,7 +1,12 @@
 // Import necessary utilities
 const { getFirestore } = require("firebase-admin/firestore");
 const db = getFirestore();
-const { getScript, checkIfAnalysisExists } = require("../firebase/scriptStore");
+const {
+  getScript,
+  checkIfAnalysisExists,
+  getAnalysisResult,
+} = require("../firebase/scriptStore");
+const handleDynamicAnalysisChaining = require("./chainHandler");
 
 const {
   validateInput,
@@ -43,10 +48,25 @@ const handleAnalysis = (
           `Version ${versionId || "current"} not found for script ${scriptId}.`
         );
       }
-      const script = scriptData.version.content;
+      let script = scriptData.version.content;
 
       if (!script) {
         throw new Error("Script content is missing or invalid.");
+      }
+      try {
+        // Dynamically handle dependencies and combine the script for the specified analysis type
+        script = await handleDynamicAnalysisChaining(
+          userId,
+          scriptId,
+          versionId,
+          analysisType,
+          script
+        );
+      } catch (error) {
+        // Return a 400 error response if the chaining fails
+        return res.status(400).json({
+          error: error.message,
+        });
       }
 
       if (options.stream) {
