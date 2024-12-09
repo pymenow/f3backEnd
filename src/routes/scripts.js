@@ -50,6 +50,7 @@ const router = express.Router();
 const { LanguageServiceClient } = require("@google-cloud/language").v2;
 const handleVertexAnalysis = require("../common/vertexAiHandler");
 const { streamFileFromGCS, synthesizeSpeechAndSave } = require("../common/gCloudStorage");
+const { audioProcessing } = require("../common/backGround");
 
 const db = getFirestore();
 const languageClient = new LanguageServiceClient();
@@ -298,11 +299,23 @@ router.post("/rating", authenticate, (req, res) => {
   })(req, res);
 });
 
-router.post("/scene-analysis", authenticate, (req, res) => {
+router.post("/scene-analysis", authenticate, async (req, res) => {
   const isStream = req.query.stream;
-  handleVertexAnalysis(sceneAnalysisInstructions, "sceneAnalysis", {
-    stream: isStream,
-  })(req, res);
+  try {
+    // Handle scene analysis
+    await handleVertexAnalysis(sceneAnalysisInstructions, "sceneAnalysis", {
+      stream: isStream,
+    })(req, res);
+
+    // Start the audio processing background task
+    const { userId, scriptId, versionId } = req.body;
+    audioProcessing(userId, scriptId, versionId);
+  } catch (error) {
+    console.error("Error in scene-analysis route:", error.message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error." });
+    }
+  }
 });
 
 router.post("/shot-list", authenticate, (req, res) => {

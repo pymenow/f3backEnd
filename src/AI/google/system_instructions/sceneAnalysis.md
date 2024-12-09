@@ -173,7 +173,11 @@ The **Scene Analyser Agent** specializes in breaking down TV commercial scripts 
         "dialogueContent": "Oily skin problems ke liye mere paas koi time nahi hai…",
         "speaker": "Sindhu (VO)",
         "gender": "Female",
-        "language": "Hindi"
+        "language": "Hindi",
+        "audio": {
+          "processing": 0,
+          "path": ""
+        }
       },
       {
         "sceneNumber": 1,
@@ -181,7 +185,11 @@ The **Scene Analyser Agent** specializes in breaking down TV commercial scripts 
         "dialogueContent": "Blackheads nikaalne mein jitna time lagta hai… utne mein mera warm-up ho sakta hai.",
         "speaker": "Sindhu (VO)",
         "gender": "Female",
-        "language": "Hindi"
+        "language": "Hindi",
+        "audio": {
+          "processing": 0,
+          "path": ""
+        }
       }
     ],
     "audioAnalysis": {

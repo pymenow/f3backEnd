@@ -106,7 +106,13 @@ const processAndSaveAnalysis = async (
   const saveToFirestore = async (processedData) => {
     try {
       // Use addAnalysis to save the data
-      await addAnalysis(userId, scriptId, versionId, analysisType, processedData);
+      await addAnalysis(
+        userId,
+        scriptId,
+        versionId,
+        analysisType,
+        processedData
+      );
       console.log(`Analysis saved for type: ${analysisType}`);
     } catch (error) {
       console.error(
@@ -158,7 +164,6 @@ const processAndSaveAnalysis = async (
     const mergedData = aggregateStreamedData(accumulatedChunks);
     const processedData = processAggregatedData(mergedData);
     processedData.streamed = true;
-
     await saveToFirestore(processedData);
     return; // Exit early for streaming mode
   }
