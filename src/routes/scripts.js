@@ -51,7 +51,7 @@ const router = express.Router();
 const { LanguageServiceClient } = require("@google-cloud/language").v2;
 const handleVertexAnalysis = require("../common/vertexAiHandler");
 const { streamFileFromGCS, synthesizeSpeechAndSave } = require("../common/gCloudStorage");
-const { audioProcessing } = require("../common/backGround");
+
 
 const db = getFirestore();
 const languageClient = new LanguageServiceClient();
@@ -308,9 +308,6 @@ router.post("/scene-analysis", authenticate, async (req, res) => {
       stream: isStream,
     })(req, res);
 
-    // Start the audio processing background task
-    const { userId, scriptId, versionId } = req.body;
-    audioProcessing(userId, scriptId, versionId);
   } catch (error) {
     console.error("Error in scene-analysis route:", error.message);
     if (!res.headersSent) {

@@ -1,7 +1,7 @@
-const { getAnalyses } = require("../firebase/scriptStore");
 const { synthesizeSpeechAndSave } = require("./gCloudStorage");
 const { getFirestore } = require("firebase-admin/firestore");
 const db = getFirestore();
+const { getAnalyses } = require("../firebase/scriptStore");
 
 /**
  * Process audio for each dialogue in scene analysis and update Firestore efficiently.
@@ -15,7 +15,13 @@ const audioProcessing = async (userId, scriptId, versionId) => {
 
     // Fetch sceneAnalysis
     const analysisType = "sceneAnalysis";
-    const analyses = await getAnalyses(userId, scriptId, versionId, analysisType);
+    console.log(require.resolve("../firebase/scriptStore"))
+    const analyses = await getAnalyses(
+      userId,
+      scriptId,
+      versionId,
+      analysisType
+    );
 
     if (!analyses || analyses.length === 0) {
       console.log(`No analyses found for analysis type: ${analysisType}`);
@@ -38,18 +44,51 @@ const audioProcessing = async (userId, scriptId, versionId) => {
 
     await docRef.update({ audioProcessing: 0 });
 
-    // Process dialogues and update sceneAnalysis in-memory
+    // Process scenes and dialogues and update sceneAnalysis in-memory
     for (const sceneKey in sceneAnalysis) {
       if (!sceneAnalysis.hasOwnProperty(sceneKey)) continue;
 
       const scene = sceneAnalysis[sceneKey];
       const dialogues = scene.dialogues;
 
-      if (!dialogues || !Array.isArray(dialogues) || dialogues.length === 0) continue;
+      // Generate audio for the scene summary
+      const sceneAudioName = `scene_${sceneKey}`;
+      try {
+        const sceneFilePath = await synthesizeSpeechAndSave(
+          scene.sceneSummary,
+          userId,
+          scriptId,
+          versionId,
+          sceneAudioName,
+          "FEMALE" // Default gender for scene summaries; can be adjusted as needed
+        );
+
+        // Add the audio object for the scene
+        scene.audio = {
+          processing: 2,
+          path: sceneFilePath,
+        };
+
+        console.log(`Audio processed for scene: ${scene.sceneSummary}`);
+      } catch (error) {
+        console.error(
+          `Error processing scene audio: ${scene.sceneSummary}`,
+          error.message
+        );
+
+        // Mark scene audio as failed
+        scene.audio = {
+          processing: -1,
+          path: "",
+        };
+      }
+
+      if (!dialogues || !Array.isArray(dialogues) || dialogues.length === 0)
+        continue;
 
       for (let i = 0; i < dialogues.length; i++) {
         const dialogue = dialogues[i];
-        const audio_name = `scene_${sceneKey}_dialogue_${i}`;
+        const audioName = `scene_${sceneKey}_dialogue_${i}`;
 
         try {
           // Mark dialogue as in-progress
@@ -64,7 +103,7 @@ const audioProcessing = async (userId, scriptId, versionId) => {
             userId,
             scriptId,
             versionId,
-            audio_name,
+            audioName,
             dialogue.gender || "MALE"
           );
 
@@ -74,9 +113,14 @@ const audioProcessing = async (userId, scriptId, versionId) => {
             path: filePath,
           };
 
-          console.log(`Audio processed for dialogue: ${dialogue.dialogueContent}`);
+          console.log(
+            `Audio processed for dialogue: ${dialogue.dialogueContent}`
+          );
         } catch (error) {
-          console.error(`Error processing dialogue: ${dialogue.dialogueContent}`, error.message);
+          console.error(
+            `Error processing dialogue: ${dialogue.dialogueContent}`,
+            error.message
+          );
 
           // Mark dialogue as failed
           dialogue.audio = {
@@ -87,7 +131,7 @@ const audioProcessing = async (userId, scriptId, versionId) => {
       }
     }
 
-    // Update the entire sceneAnalysis in Firestore after processing all dialogues
+    // Update the entire sceneAnalysis in Firestore after processing all scenes and dialogues
     await docRef.update({
       "data.scenes": sceneAnalysis,
       audioProcessing: 1, // Mark processing as completed
@@ -111,7 +155,10 @@ const audioProcessing = async (userId, scriptId, versionId) => {
 
       await docRef.update({ audioProcessing: -1 });
     } catch (updateError) {
-      console.error("Error updating Firestore with processing failure:", updateError.message);
+      console.error(
+        "Error updating Firestore with processing failure:",
+        updateError.message
+      );
     }
   }
 };

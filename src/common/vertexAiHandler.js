@@ -14,6 +14,7 @@ const {
   fetchScript,
   processAndSaveAnalysis,
 } = require("./utilityFunctions");
+const { audioProcessing } = require("./backGround");
 
 const handleAnalysis = (
   systemPrompt,
@@ -95,6 +96,9 @@ const handleAnalysis = (
           versionId || scriptData.currentVersion,
           analysisType
         );
+        if (analysisType == "sceneAnalysis") {
+          audioProcessing(userId, scriptId, versionId);
+        }
 
         // Respond with the final output
         return res.status(200).json({
