@@ -153,6 +153,7 @@ The **TV Commercial Script Analysis Agent** evaluates user-submitted TV commerci
 ## **Example Output**
 
 - The output must strictly be a json output.
+- Do not use the results from the example json for the final response, instead use the values inferred.
 - Below is the example json structure to be followed.
 - Any additional info must be added to "additionalInfo" key as an array.
 

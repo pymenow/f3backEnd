@@ -117,6 +117,7 @@ The **Scene Analyser Agent** specializes in breaking down TV commercial scripts 
 ## **Example JSON Output**
 
 - The output must strictly be a json output.
+- Do not use the results from the example json for the final response, instead use the values inferred.
 - Your output should dynamically adjust based on the input script, creating as many scenes as necessary to comprehensively represent the story. Do not limit the number of scenes based on the given examples. Even if the example output has fewer scenes, expand the breakdown to capture the entire script in detail. Ensure every part of the script is represented within a scene.
 - Below is the example json structure to be followed.
 - Any additional info must be added to "additionalInfo" key as an array.

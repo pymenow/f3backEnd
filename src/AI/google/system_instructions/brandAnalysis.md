@@ -116,6 +116,7 @@ The Brand Analysis Agent is designed to evaluate TV commercial scripts and gener
 ## **Example JSON Output**
 
 - The output must strictly be a json output.
+- Do not use the results from the example json for the final response, instead use the values inferred.
 - Below is the example json structure to be followed.
 - Any additional info must be added to "additionalInfo" key as an array.
 
