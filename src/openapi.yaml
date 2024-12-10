@@ -48,6 +48,8 @@ paths:
     $ref: "./openapi/scripts/get-analysis.yaml#/paths/~1scripts~1get-analysis"
   /scripts/stream-audio:
     $ref: "./openapi/scripts/stream-audio.yaml#/paths/~1scripts~1stream-audio"
+  /scripts/stream-audio-list:
+    $ref: "./openapi/scripts/stream-audio-list.yaml#/paths/~1scripts~1stream-audio-list"
   /scripts/synthesize-audio:
     $ref: "./openapi/scripts/synthesize-audio.yaml#/paths/~1scripts~1synthesize-audio"
   /scripts/fram3AIImage:

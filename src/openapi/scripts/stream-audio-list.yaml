@@ -1,0 +1,53 @@
+paths:
+  /scripts/stream-audio-list:
+    get:
+      summary: Stream multiple audio files from Google Cloud Storage
+      description: Streams multiple audio files sequentially from Google Cloud Storage based on the provided file paths.
+      tags:
+        - ScriptAI
+      parameters:
+        - name: filePaths
+          in: query
+          required: true
+          description: A JSON array of file paths in the Google Cloud Storage bucket.
+          schema:
+            type: string
+            example: '["JirLVB69ssMkGLUucFnLyslUXhh1/audio1.mp3", "JirLVB69ssMkGLUucFnLyslUXhh1/audio2.mp3"]'
+      responses:
+        "200":
+          description: Audio stream
+          content:
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Missing or invalid query parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "filePaths must be a non-empty JSON array."
+        "404":
+          description: One or more files not found in Google Cloud Storage
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "File not found"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"

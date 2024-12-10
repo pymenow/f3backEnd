@@ -296,6 +296,48 @@ const streamFileFromGCS = async (filePath, res) => {
   }
 };
 
+const streamMultipleFilesFromGCS = async (filePaths, res) => {
+  try {
+    // Set response headers for audio streaming
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Content-Disposition", "inline");
+
+    for (const filePath of filePaths) {
+      const bucket = storage.bucket(BUCKET_NAME);
+      const file = bucket.file(filePath);
+
+      // Check if the file exists
+      const [exists] = await file.exists();
+      if (!exists) {
+        console.error(`File not found: ${filePath}`);
+        throw new Error(`File not found: ${filePath}`);
+      }
+
+      // Stream the file to the response sequentially
+      const readStream = file.createReadStream();
+      await new Promise((resolve, reject) => {
+        readStream.pipe(res, { end: false }); // Don't end the response for sequential streaming
+
+        readStream.on("end", () => {
+          console.log(`File streamed successfully: ${filePath}`);
+          resolve();
+        });
+
+        readStream.on("error", (err) => {
+          console.error(`Error streaming file ${filePath}:`, err.message);
+          reject(err);
+        });
+      });
+    }
+
+    // End the response after all files have been streamed
+    res.end();
+  } catch (error) {
+    console.error("Error streaming multiple files:", error.message);
+    res.status(500).json({ error: "Error streaming multiple files" });
+  }
+};
+
 // Function to detect language using Google Cloud Translation API
 const detectLanguage = async (text) => {
   try {
@@ -383,5 +425,6 @@ module.exports = {
   uploadFileFromUrl,
   saveArtifactAndGenerateUrl,
   streamFileFromGCS,
+  streamMultipleFilesFromGCS,
   synthesizeSpeechAndSave,
 };

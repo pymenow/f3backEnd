@@ -50,7 +50,7 @@ const { authenticate } = require("../middleware/authMiddleware");
 const router = express.Router();
 const { LanguageServiceClient } = require("@google-cloud/language").v2;
 const handleVertexAnalysis = require("../common/vertexAiHandler");
-const { streamFileFromGCS, synthesizeSpeechAndSave } = require("../common/gCloudStorage");
+const { streamFileFromGCS, synthesizeSpeechAndSave, streamMultipleFilesFromGCS } = require("../common/gCloudStorage");
 
 
 const db = getFirestore();
@@ -478,6 +478,27 @@ router.get("/stream-audio", async (req, res) => {
     res.status(500).json({ error: "Internal server error." });
   }
 });
+
+router.get("/stream-audio-list", async (req, res) => {
+  const { filePaths } = req.query;
+
+  if (!filePaths) {
+    return res.status(400).json({ error: "Missing required parameter: filePaths" });
+  }
+
+  try {
+    const filesArray = JSON.parse(filePaths); // Parse JSON string into array
+    if (!Array.isArray(filesArray) || filesArray.length === 0) {
+      return res.status(400).json({ error: "filePaths must be a non-empty array." });
+    }
+
+    await streamMultipleFilesFromGCS(filesArray, res);
+  } catch (error) {
+    console.error("Error streaming audio files:", error.message);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
 
 router.post("/synthesize-audio", authenticate, async (req, res) => {
   const { text, scriptId, versionId, gender } = req.body;

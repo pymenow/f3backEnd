@@ -15,7 +15,6 @@ const audioProcessing = async (userId, scriptId, versionId) => {
 
     // Fetch sceneAnalysis
     const analysisType = "sceneAnalysis";
-    console.log(require.resolve("../firebase/scriptStore"))
     const analyses = await getAnalyses(
       userId,
       scriptId,
@@ -44,6 +43,9 @@ const audioProcessing = async (userId, scriptId, versionId) => {
 
     await docRef.update({ audioProcessing: 0 });
 
+    // Array to store audio paths sequentially
+    const audioPlaylist = [];
+
     // Process scenes and dialogues and update sceneAnalysis in-memory
     for (const sceneKey in sceneAnalysis) {
       if (!sceneAnalysis.hasOwnProperty(sceneKey)) continue;
@@ -69,6 +71,9 @@ const audioProcessing = async (userId, scriptId, versionId) => {
           processing: 2,
           path: sceneFilePath,
         };
+
+        // Add the path to the playlist
+        audioPlaylist.push(sceneFilePath);
 
         console.log(`Audio processed for scene: ${scene.sceneSummary}`);
       } catch (error) {
@@ -114,6 +119,9 @@ const audioProcessing = async (userId, scriptId, versionId) => {
             path: filePath,
           };
 
+          // Add the path to the playlist
+          audioPlaylist.push(filePath);
+
           console.log(
             `Audio processed for dialogue: ${dialogue.dialogueContent}`
           );
@@ -132,9 +140,10 @@ const audioProcessing = async (userId, scriptId, versionId) => {
       }
     }
 
-    // Update the entire sceneAnalysis in Firestore after processing all scenes and dialogues
+    // Update the entire sceneAnalysis and the audioPlaylist in Firestore
     await docRef.update({
       "data.scenes": sceneAnalysis,
+      "data.audioPlaylist": audioPlaylist, // Save the playlist
       audioProcessing: 1, // Mark processing as completed
     });
 
