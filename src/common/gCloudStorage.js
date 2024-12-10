@@ -316,6 +316,7 @@ const synthesizeSpeechAndSave = async (
   userId,
   scriptId,
   versionId,
+  audio_name = null,
   gender = "MALE"
 ) => {
   try {
@@ -338,7 +339,7 @@ const synthesizeSpeechAndSave = async (
     const [response] = await textToSpeechClient.synthesizeSpeech(request);
 
     // Generate a unique file name
-    const uniqueFileName = `${uuidv4()}.mp3`;
+    const uniqueFileName = audio_name ? `${audio_name}.mp3` : `${uuidv4()}.mp3`;
 
     // Construct the file path in GCS
     const filePath = `${userId}/${scriptId}/${versionId}/audio/${uniqueFileName}`;

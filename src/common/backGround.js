@@ -55,6 +55,8 @@ const audioProcessing = async (userId, scriptId, versionId) => {
         for (let i = 0; i < dialogues.length; i++) {
           const dialogue = dialogues[i];
           const dialoguePath = `data.scenes.${sceneKey}.dialogues.${i}`;
+          // Define audio_name in the desired format
+          const audio_name = `scene_${sceneKey}_dialogue_${i}`;
   
           try {
             // Mark as in-progress
@@ -76,6 +78,7 @@ const audioProcessing = async (userId, scriptId, versionId) => {
               userId,
               scriptId,
               versionId,
+              audio_name,
               dialogue.gender || "MALE"
             );
   
