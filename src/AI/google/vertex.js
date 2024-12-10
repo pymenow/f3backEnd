@@ -32,6 +32,7 @@ const processScriptWithVertexAI = async (
         maxOutputTokens: 8192,
         temperature: 1,
         topP: 0.95,
+        responseMimeType: "application/json",
       },
       safetySettings: [
         { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "OFF" },

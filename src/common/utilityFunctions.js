@@ -26,52 +26,50 @@ const fetchScript = async (db, scriptID, userID) => {
 };
 
 const processAggregatedData = (vertexResponse) => {
-  // Ensure the structure of vertexResponse
-  if (!vertexResponse || !Array.isArray(vertexResponse.candidates)) {
+  // Validate the response structure
+  if (!vertexResponse?.candidates?.length) {
     throw new Error(
       "Invalid Vertex AI response format: Missing 'candidates' array"
     );
   }
 
+  const {
+    candidates,
+    usageMetadata = {},
+    modelVersion = "unknown",
+  } = vertexResponse;
+
   const processedData = {
-    usageMetadata: vertexResponse.usageMetadata || {},
-    modelVersion: vertexResponse.modelVersion || "unknown",
-    data: null, // This will hold the cleaned and parsed data
+    usageMetadata,
+    modelVersion,
+    data: null, // This will hold the parsed data
   };
 
   try {
-    // Iterate over candidates to find and process `content.parts.text`
-    vertexResponse.candidates.forEach((candidate) => {
-      if (!candidate.content || !candidate.content.parts) {
-        console.warn("Candidate content or parts missing, skipping...");
-        return;
+    // Process the first candidate (assuming only one candidate is relevant)
+    const firstCandidate = candidates[0];
+
+    if (!firstCandidate.content?.parts?.length) {
+      throw new Error("Candidate content or parts missing");
+    }
+
+    // Parse the JSON from the text key in the parts array
+    const partText = firstCandidate.content.parts[0].text;
+
+    try {
+      const parsedContent = JSON.parse(partText);
+
+      // Ensure the parsed content has a `data` key
+      if (!parsedContent.data) {
+        throw new Error("Parsed content does not contain 'data' key");
       }
 
-      // Process parts array
-      candidate.content.parts.forEach((part) => {
-        if (!part.text) return;
-
-        // Clean Markdown formatting
-        const cleanedText = part.text
-          .replace(/```json/g, "") // Remove opening JSON code block
-          .replace(/```/g, "") // Remove closing backticks
-          .trim();
-
-        try {
-          // Parse JSON content from cleaned text
-          const parsedContent = JSON.parse(cleanedText);
-
-          // Ensure the parsed content has a `data` key
-          if (parsedContent.data) {
-            processedData.data = parsedContent.data; // Update the data key
-          }
-        } catch (error) {
-          console.warn("Failed to parse JSON content:", cleanedText);
-        }
-      });
-    });
+      processedData.data = parsedContent.data; // Update processed data
+    } catch (error) {
+      throw new Error(`Failed to parse JSON content: ${error.message}`);
+    }
   } catch (error) {
-    console.error("Error processing Vertex AI response:", error.message);
+    throw new Error(`Error processing Vertex AI response: ${error.message}`);
   }
 
   return processedData;
@@ -111,14 +109,14 @@ const processAndSaveAnalysis = async (
   const saveToFirestore = async (processedData) => {
     try {
       // Use addAnalysis to save the data
-      await addAnalysis(
+      const analysisDocId = await addAnalysis(
         userId,
         scriptId,
         versionId,
         analysisType,
         processedData
       );
-      console.log(`Analysis saved for type: ${analysisType}`);
+      console.log(`Analysis saved for type: ${analysisType} ${analysisDocId}`);
     } catch (error) {
       console.error(
         `Error saving analysis for type: ${analysisType}`,
