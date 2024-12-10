@@ -2,33 +2,11 @@
 const { getFirestore } = require("firebase-admin/firestore");
 const db = getFirestore();
 const { getAnalysisResult } = require("../firebase/scriptStore");
-
-// Define dependency mapping
-const analysisDependencies = {
-  scriptInfo: ["script"],
-  brandAnalysis: ["script"],
-  scriptSummary: ["script"],
-  rating: ["script"],
-  emotionAnalysis: ["script"],
-  sceneAnalysis: ["scriptSummary", "script"],
-  shotList: ["sceneAnalysis", "scriptSummary", "script"],
-  promptGenerator: ["shotList", "sceneAnalysis", "script"],
-  storyPlot: ["script"],
-};
-
-// Define labels for each dependency
-const dependencyLabels = {
-  scriptInfo: "Script Info Agent Output",
-  brandAnalysis: "Brand Analysis Agent Output",
-  scriptSummary: "Script Summary Agent Output",
-  rating: "Script Rating Analysis Agent Output",
-  emotionAnalysis: "Sentiment Analysis Agent Output",
-  sceneAnalysis: "Scene Analysis Agent Output",
-  shotList: "Shot List Analysis Agent Output",
-  promptGenerator: "Image Prompt Generator Output",
-  script: "Script Content",
-  storyPlot: "Story Plot Analysis Agent Output"
-};
+const {
+  analysisDependencies,
+  dependencyLabels,
+  instructionMapping,
+} = require("./dependencyMapping");
 
 /**
  * Dynamically handles analysis dependencies and combines inputs for processing.
@@ -50,13 +28,16 @@ const handleDynamicAnalysisChaining = async (
   const dependencies = analysisDependencies[analysisType];
 
   if (!dependencies || !dependencies.includes("script")) {
-    throw new Error("Invalid dependency configuration. 'script' must be included.");
+    throw new Error(
+      "Invalid dependency configuration. 'script' must be included."
+    );
   }
 
   let combinedInput = "";
 
   for (const dependency of dependencies) {
     let content = "";
+    let instruction = "";
 
     if (dependency === "script") {
       // Use the script content directly
@@ -81,11 +62,18 @@ const handleDynamicAnalysisChaining = async (
 
     // Append the labeled content
     const label = dependencyLabels[dependency] || `${dependency} Result`;
+    console.log("LABEL", label);
+    instruction =
+      instructionMapping[analysisType]?.[dependency] ||
+      "No specific instructions provided.";
+    console.log("Instructions:", instruction, dependency);
     combinedInput += `
+${instruction}
 ${label}:
 ${content}
 `;
   }
+  console.log(combinedInput);
 
   return combinedInput.trim();
 };
