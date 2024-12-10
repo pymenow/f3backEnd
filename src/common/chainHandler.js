@@ -62,18 +62,15 @@ const handleDynamicAnalysisChaining = async (
 
     // Append the labeled content
     const label = dependencyLabels[dependency] || `${dependency} Result`;
-    console.log("LABEL", label);
     instruction =
       instructionMapping[analysisType]?.[dependency] ||
       "No specific instructions provided.";
-    console.log("Instructions:", instruction, dependency);
     combinedInput += `
 ${instruction}
 ${label}:
 ${content}
 `;
   }
-  console.log(combinedInput);
 
   return combinedInput.trim();
 };
