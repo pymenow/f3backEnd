@@ -26,48 +26,53 @@ const fetchScript = async (db, scriptID, userID) => {
 };
 
 const processAggregatedData = (vertexResponse) => {
-  // Ensure vertexResponse has the expected structure
+  // Ensure the structure of vertexResponse
   if (!vertexResponse || !Array.isArray(vertexResponse.candidates)) {
     throw new Error(
       "Invalid Vertex AI response format: Missing 'candidates' array"
     );
   }
 
-  // Standardized output structure
   const processedData = {
     usageMetadata: vertexResponse.usageMetadata || {},
     modelVersion: vertexResponse.modelVersion || "unknown",
+    data: null, // This will hold the cleaned and parsed data
   };
 
-  vertexResponse.candidates.forEach((candidate) => {
-    const contentParts = candidate.content?.parts || []; // Ensure content.parts exists
-    const aggregatedText = contentParts.map((part) => part.text).join("");
-
-    // Clean up Markdown formatting
-    const cleanedText = aggregatedText
-      .replace(/```json/g, "") // Remove JSON code block markers
-      .replace(/```/g, "") // Remove any leftover backticks
-      .trim();
-
-    // Attempt to parse JSON from the cleaned text
-    try {
-      const parsedContent = JSON.parse(cleanedText);
-
-      // Merge Lines if present in the parsed content
-      if (parsedContent.Lines && Array.isArray(parsedContent.Lines)) {
-        processedData.Lines.push(...parsedContent.Lines);
+  try {
+    // Iterate over candidates to find and process `content.parts.text`
+    vertexResponse.candidates.forEach((candidate) => {
+      if (!candidate.content || !candidate.content.parts) {
+        console.warn("Candidate content or parts missing, skipping...");
+        return;
       }
 
-      // Merge other keys directly into processedData
-      Object.keys(parsedContent).forEach((key) => {
-        if (key !== "Lines") {
-          processedData[key] = parsedContent[key];
+      // Process parts array
+      candidate.content.parts.forEach((part) => {
+        if (!part.text) return;
+
+        // Clean Markdown formatting
+        const cleanedText = part.text
+          .replace(/```json/g, "") // Remove opening JSON code block
+          .replace(/```/g, "") // Remove closing backticks
+          .trim();
+
+        try {
+          // Parse JSON content from cleaned text
+          const parsedContent = JSON.parse(cleanedText);
+
+          // Ensure the parsed content has a `data` key
+          if (parsedContent.data) {
+            processedData.data = parsedContent.data; // Update the data key
+          }
+        } catch (error) {
+          console.warn("Failed to parse JSON content:", cleanedText);
         }
       });
-    } catch (error) {
-      console.warn("Failed to parse JSON content:", cleanedText);
-    }
-  });
+    });
+  } catch (error) {
+    console.error("Error processing Vertex AI response:", error.message);
+  }
 
   return processedData;
 };
