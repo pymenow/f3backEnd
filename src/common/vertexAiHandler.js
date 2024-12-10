@@ -84,6 +84,9 @@ const handleAnalysis = (
           analysisType,
           res
         );
+        if (analysisType == "sceneAnalysis") {
+          audioProcessing(userId, scriptId, versionId);
+        }
 
         // Update Firestore with the processed status in a background task
       } else {
