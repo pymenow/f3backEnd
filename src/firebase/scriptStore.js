@@ -124,7 +124,6 @@ const addAnalysis = async (
       status: "completed", // Default status
       timestamp: FieldValue.serverTimestamp(),
     });
-
     console.log(
       `Analysis added successfully for versionId: ${versionId}, analysisType: ${analysisType}`
     );
