@@ -9,6 +9,7 @@ const {
   addVersionToScript
 } = require("../firebase/scriptStore");
 const { generateAndSaveImage } = require("../AI/flux/imageGeneration");
+const { generateAndSaveImageWithFAL } = require("../AI/flux/imageGenerationFal");
 
 const loadMarkdown = require("../common/loadMarkdown");
 const sentimentInstructions = loadMarkdown(
@@ -334,11 +335,19 @@ router.post("/prompt-generator", authenticate, (req, res) => {
 
 /**
  * POST /fram3AIImage
- * Generate an image using the Flux API and save it to Google Cloud Storage.
+ * Generate an image using the Flux API or FAL API and save it to Google Cloud Storage.
  */
 router.post("/fram3AIImage", authenticate, async (req, res) => {
-  const { scriptId, versionId, prompt, artifactType, apiPath, width, height } =
-    req.body;
+  const {
+    scriptId,
+    versionId,
+    prompt,
+    artifactType,
+    apiPath,
+    width,
+    height,
+    prod = false, // Default to false
+  } = req.body;
 
   // Validate input
   if (!scriptId || !versionId || !prompt) {
@@ -351,8 +360,15 @@ router.post("/fram3AIImage", authenticate, async (req, res) => {
   try {
     const uid = req.user.uid; // Authenticated user ID
 
+    console.log(`Using ${prod ? "generateAndSaveImage" : "generateAndSaveImageWithFAL"}`);
+
+    // Choose the appropriate function based on `prod`
+    const generateImageFunction = prod
+      ? generateAndSaveImage // Use Flux API
+      : generateAndSaveImageWithFAL; // Use FAL API
+
     // Generate and save the image
-    const signedUrl = await generateAndSaveImage(
+    const signedUrl = await generateImageFunction(
       uid,
       scriptId,
       versionId,
@@ -376,6 +392,7 @@ router.post("/fram3AIImage", authenticate, async (req, res) => {
       .json({ error: `Failed to generate and save image: ${error.message}` });
   }
 });
+
 
 router.get("/get-analysis", authenticate, async (req, res) => {
   const { scriptId, versionId, analysisType } = req.query;

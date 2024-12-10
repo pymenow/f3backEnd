@@ -20,11 +20,11 @@ paths:
                 scriptId:
                   type: string
                   description: The unique ID of the script associated with the image.
-                  example: "script123"
+                  example: "ZccaVKue0MrGR5SQXRY3"
                 versionId:
                   type: string
                   description: The version ID of the script associated with the image.
-                  example: "v1"
+                  example: "qN2vyZUtFZKKO2XWKCgr"
                 prompt:
                   type: string
                   description: The text prompt to generate the image.
@@ -54,6 +54,11 @@ paths:
                   description: The height of the generated image in pixels.
                   example: 720
                   default: 1024
+                prod:
+                  type: boolean
+                  description: Flag to determine whether to use Prod or Dev.
+                  example: false
+                  default: false
       responses:
         "200":
           description: Image generated and saved successfully

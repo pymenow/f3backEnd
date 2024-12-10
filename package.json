@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@fal-ai/client": "^1.2.1",
     "@google-cloud/firestore": "^7.10.0",
     "@google-cloud/language": "^6.5.0",
     "@google-cloud/storage": "^7.14.0",
