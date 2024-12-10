@@ -60,7 +60,8 @@ const audioProcessing = async (userId, scriptId, versionId) => {
           scriptId,
           versionId,
           sceneAudioName,
-          "FEMALE" // Default gender for scene summaries; can be adjusted as needed
+          "MALE",
+          true
         );
 
         // Add the audio object for the scene

@@ -317,23 +317,38 @@ const synthesizeSpeechAndSave = async (
   scriptId,
   versionId,
   audio_name = null,
-  gender = "MALE"
+  gender = "MALE",
+  scene = false
 ) => {
   try {
     // Detect the language of the input text
     const languageCode = await detectLanguage(text);
+    let request;
 
-    // Prepare the Text-to-Speech request
-    const request = {
-      input: { text },
-      voice: {
-        languageCode,
-        ssmlGender: gender,
-      },
-      audioConfig: {
-        audioEncoding: "MP3",
-      },
-    };
+    if (scene && languageCode == "en") {
+      request = {
+        input: { text },
+        voice: {
+          name: "en-IN-Journey-D",
+          languageCode: "en-IN",
+        },
+        audioConfig: {
+          audioEncoding: "MP3",
+        },
+      };
+    } else {
+      // Prepare the Text-to-Speech request
+      request = {
+        input: { text },
+        voice: {
+          languageCode,
+          ssmlGender: gender,
+        },
+        audioConfig: {
+          audioEncoding: "MP3",
+        },
+      };
+    }
 
     // Perform the Text-to-Speech operation
     const [response] = await textToSpeechClient.synthesizeSpeech(request);
